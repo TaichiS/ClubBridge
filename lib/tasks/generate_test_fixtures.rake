@@ -16,5 +16,25 @@ namespace :test do
     end
     p.serialize("test/fixtures/files/students.xlsx")
     puts "Generated test/fixtures/files/students.xlsx"
+
+    # Club fixture
+    p = Axlsx::Package.new
+    wb = p.workbook
+    wb.add_worksheet(name: "Clubs") do |sheet|
+      sheet.add_row [
+        "類別", "編號", "社團名稱", "指導老師", "簡介", "最大人數",
+        "上課地點", "雨天地點", "備註", "條件一", "條件二", "條件三", "社團老師 Email"
+      ]
+      sheet.add_row [
+        "體育", "C101", "籃球社", "王老師", "一起來打籃球", 20,
+        "體育館", "體育館", "", 1, 0, "", "teacher.wang@example.com"
+      ]
+      sheet.add_row [
+        "學術", "C102", "圍棋社", "李老師", "一起來下圍棋", 10,
+        "活動中心", "活動���心", "", 0, 0, "", "teacher.li@example.com"
+      ]
+    end
+    p.serialize("test/fixtures/files/clubs.xlsx")
+    puts "Generated test/fixtures/files/clubs.xlsx"
   end
 end

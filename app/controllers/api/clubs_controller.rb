@@ -1,6 +1,22 @@
 class Api::ClubsController < ApplicationController
   before_action :set_club, only: [:update, :destroy]
 
+  COLUMN_MAPPING = {
+    "類別" => "category",
+    "編號" => "club_number",
+    "社團名稱" => "name",
+    "指導老師" => "teacher_name",
+    "簡介" => "description",
+    "最大人數" => "max_members",
+    "上課地點" => "location",
+    "雨天地點" => "rainy_day_location",
+    "備註" => "note",
+    "條件一" => "condition1",
+    "條件二" => "condition2",
+    "條件三" => "condition3",
+    "社團老師 Email" => "teacher_email"
+  }.freeze
+
   def index
     render json: Club.all
   end
@@ -25,6 +41,25 @@ class Api::ClubsController < ApplicationController
   def destroy
     @club.destroy
     head :no_content
+  end
+
+  def import
+    file = params[:file]
+    school = School.find(params[:school_id])
+    
+    spreadsheet = Roo::Spreadsheet.open(file.path)
+    header = spreadsheet.row(1).map { |h| COLUMN_MAPPING[h] || h }
+
+    (2..spreadsheet.last_row).each do |i|
+      row_data = Hash[[header, spreadsheet.row(i)].transpose]
+      club = school.clubs.build(row_data)
+      unless club.save
+        Rails.logger.error "Failed to import club: #{club.errors.full_messages.join(', ')}"
+      end
+    end
+    render json: { message: "Import finished" }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   private

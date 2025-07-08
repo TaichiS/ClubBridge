@@ -32,7 +32,11 @@ Rails.application.routes.draw do
           post :import
         end
       end
-      resources :clubs, only: [:index, :create, :update, :destroy]
+      resources :clubs, only: [:index, :create, :update, :destroy] do
+        collection do
+          post :import
+        end
+      end
     end
   end
 end

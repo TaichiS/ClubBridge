@@ -55,4 +55,20 @@ RSpec.describe "Api::Clubs", type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe "POST /api/schools/:school_id/clubs/import" do
+    let(:school_for_import) { School.create!(name: "Import Test School", status: :approved) }
+    let(:file) { fixture_file_upload('test/fixtures/files/clubs.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') }
+
+    it "imports clubs from the Excel file" do
+      expect {
+        post "/api/schools/#{school_for_import.id}/clubs/import", params: { file: file }
+      }.to change(school_for_import.clubs, :count).by(2)
+    end
+
+    it "returns a success status" do
+      post "/api/schools/#{school_for_import.id}/clubs/import", params: { file: file }
+      expect(response).to have_http_status(:ok)
+    end
+  end
 end
