@@ -25,5 +25,9 @@ Rails.application.routes.draw do
         post :apply
       end
     end
+
+    scope 'schools/:school_id' do
+      resources :students, only: [:index, :create, :update, :destroy]
+    end
   end
 end
