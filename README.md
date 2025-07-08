@@ -41,8 +41,8 @@
   - [x] 實作 `acts_as_tenant`，讓社團資料隸屬於特定學校。
   - [x] 實作 `POST /api/schools/:school_id/clubs/import` API，支援從 Excel 大量匯入社團。
   - [x] 實作社團資料的 CRUD API (`/api/schools/:school_id/clubs`)。
-- [ ] **系統設定**
-  - [ ] 實作設定「進站說明」的 API。
-  - [ ] 實作設定「活動日期」的 API。
+- [x] **系統設定**
+  - [x] 建立 `SchoolSetting` 模型，儲存學校專屬設定。
+  - [x] 實作 `GET`, `POST`, `PATCH` API (`/api/schools/:school_id/setting`) 來管理設定。
 - [ ] **認證與授權**
   - [ ] 建立初步的學校管理員認證機制，以保護上述 API。

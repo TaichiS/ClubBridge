@@ -4,6 +4,8 @@ class School < ApplicationRecord
   has_many :students, dependent: :destroy
   has_many :clubs, dependent: :destroy
   has_one :school_setting, dependent: :destroy
+  has_many :memberships, dependent: :destroy
+  has_many :users, through: :memberships
 
   validates :name, presence: true
 end

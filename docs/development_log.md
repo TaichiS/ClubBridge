@@ -58,7 +58,7 @@
 - **錯誤現象**: 測試中出現 `NoMethodError: undefined method 'students' for an instance of School`。
 - **根本原因**: 在 `Student` 模型中定義了 `belongs_to :school`，但在 `School` 模型中忘記定義對應的 `has_many :students`。
 - **解決方案**: 在 `app/models/school.rb` 中加入 `has_many :students, dependent: :destroy`。
-- **��� **學習與預防**:
+- **📝 **學習與預防**:
   > **ActiveRecord 的關聯是雙向的。定義 `belongs_to` 後，務必在另一個模型中定義 `has_many` 或 `has_one`，以確保雙向關聯的完整性。**
 
 ### 4. Ruby 語法錯誤：動態常數賦值
@@ -72,7 +72,7 @@
 ### 5. 測試資料狀態污染
 
 - **錯誤現象**: 匯入測試失敗，除錯訊息顯示 `Validation errors: Student has already been taken`。
-- **根本原因**: 測試 setup (`let!`) 中預先建立的學生資料，其 `student_id` 與測試匯入的 Excel 檔案中的 `student_id` 重複，觸發了模型的唯一���驗證 (`uniqueness`)。
+- **根本原因**: 測試 setup (`let!`) 中預先建立的學生資料，其 `student_id` 與��試匯入的 Excel 檔案中的 `student_id` 重複，觸發了模型的唯一���驗證 (`uniqueness`)。
 - **解決方案**: 修改匯入功能的測試，讓它在一個全新的、沒有任何學生資料的 `school_for_import` 物件上進行，從而隔離了測試狀態。
 - **📝 **學習與預防**:
   > **測試之間應保持獨立，避免狀態污染。在測試「建立」或「匯入」這類功能時，要確保測試的初始狀態是乾淨、可預測的，不會與待建立的資料產生衝突。**
@@ -111,3 +111,25 @@
 ## 🔍 問題排查日誌
 
 本次開發過程非常順利，沒有遇到新的重大問題。先前在學生資料管理開發中獲得的經驗（特別是關於 Gem 相容性、`acts_as_tenant` 的使用和測試資料隔離）讓我們得以避開了許多潛在的陷阱。
+
+---
+---
+
+# 開發日誌 (2025-07-08)
+
+**主題：系統設定功能**
+
+## ✅ 工作成果
+
+完成了讓學校管理員設定其學校專屬參數的功能��
+
+1.  **模型與關聯**:
+    - 根據需求，建立了 `SchoolSetting` 模型，包含 `welcome_message` 及四個 `datetime` 型別的活動時間欄位。
+    - 建立了 `School` 與 `SchoolSetting` 之間的一對一 (`has_one`/`belongs_to`) 關聯，並加入了唯一性驗證確保資料完整性。
+
+2.  **API 設計**:
+    - 採用單數資源 (`resource`) 路由，設計了 `GET /api/schools/:school_id/setting` 及 `POST/PATCH` 端點。
+    - 在 `Api::SchoolSettingsController` 中，實作了「尋找或建立/更新」的邏輯，讓前端可以用同一個端點來初始化或更新設定，簡化了介面操作。
+
+3.  **測試**:
+    - 撰寫了完整的請求測試，涵蓋了設定不存在和已存在兩種情境下的讀取、建立和更新操作，確保 API 的穩健性。
