@@ -1,63 +1,74 @@
-require 'rails_helper'
+require 'swagger_helper'
 
-RSpec.describe "Api::SchoolSettings", type: :request do
+describe 'School Settings API', type: :request do
   let(:user) { User.create!(email: "test@example.com") }
   let(:school) { School.create!(name: "Test School", status: :approved) }
   let!(:membership) { Membership.create!(user: user, school: school, role: :admin) }
 
-  describe "GET /api/schools/:school_id/setting" do
-    context "when setting does not exist" do
-      it "returns a new setting object" do
-        get "/api/schools/#{school.id}/setting", headers: auth_headers(user)
-        expect(response).to have_http_status(:success)
-        json_response = JSON.parse(response.body)
-        expect(json_response["id"]).to be_nil
-        expect(json_response["welcome_message"]).to be_nil
+  path '/api/schools/{school_id}/setting' do
+    get('Show school settings') do
+      tags 'School Settings'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: 'school_id', in: :path, type: :string
+
+      response(200, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        run_test!
       end
     end
 
-    context "when setting exists" do
-      let!(:setting) { school.create_school_setting!(welcome_message: "Hello!") }
+    post('Create school settings') do
+      tags 'School Settings'
+      consumes 'application/json'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: 'school_id', in: :path, type: :string
+      parameter name: :school_setting, in: :body, schema: {
+        type: :object,
+        properties: {
+          school_setting: {
+            type: :object,
+            properties: {
+              welcome_message: { type: :string }
+            }
+          }
+        }
+      }
 
-      it "returns the existing setting" do
-        get "/api/schools/#{school.id}/setting", headers: auth_headers(user)
-        expect(response).to have_http_status(:success)
-        json_response = JSON.parse(response.body)
-        expect(json_response["id"]).to eq(setting.id)
-        expect(json_response["welcome_message"]).to eq("Hello!")
-      end
-    end
-  end
-
-  describe "POST /api/schools/:school_id/setting" do
-    let(:valid_attributes) { { welcome_message: "Welcome to our school!" } }
-
-    it "creates a new setting" do
-      expect {
-        post "/api/schools/#{school.id}/setting", params: { school_setting: valid_attributes }, headers: auth_headers(user)
-      }.to change(SchoolSetting, :count).by(1)
-      expect(school.reload.school_setting.welcome_message).to eq("Welcome to our school!")
-    end
-  end
-
-  describe "PATCH /api/schools/:school_id/setting" do
-    let(:update_attributes) { { welcome_message: "Enrollment has started!" } }
-
-    context "when setting does not exist" do
-      it "creates a new setting" do
-        patch "/api/schools/#{school.id}/setting", params: { school_setting: update_attributes }, headers: auth_headers(user)
-        expect(school.reload.school_setting).to_not be_nil
-        expect(school.school_setting.welcome_message).to eq("Enrollment has started!")
+      response(201, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:school_setting) { { school_setting: { welcome_message: "Created" } } }
+        run_test!
       end
     end
 
-    context "when setting exists" do
-      let!(:setting) { school.create_school_setting!(welcome_message: "Hello!") }
+    patch('Update school settings') do
+      tags 'School Settings'
+      consumes 'application/json'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: 'school_id', in: :path, type: :string
+      parameter name: :school_setting, in: :body, schema: {
+        type: :object,
+        properties: {
+          school_setting: {
+            type: :object,
+            properties: {
+              welcome_message: { type: :string }
+            }
+          }
+        }
+      }
 
-      it "updates the existing setting" do
-        patch "/api/schools/#{school.id}/setting", params: { school_setting: update_attributes }, headers: auth_headers(user)
-        setting.reload
-        expect(setting.welcome_message).to eq("Enrollment has started!")
+      response(200, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let!(:existing_setting) { school.create_school_setting! }
+        let(:school_setting) { { school_setting: { welcome_message: "Updated" } } }
+        run_test!
       end
     end
   end

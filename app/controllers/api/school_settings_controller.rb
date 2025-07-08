@@ -1,5 +1,6 @@
 class Api::SchoolSettingsController < ApplicationController
   before_action :set_school
+  before_action :set_setting, only: [:update]
 
   def show
     @setting = @school.school_setting || @school.build_school_setting
@@ -16,7 +17,6 @@ class Api::SchoolSettingsController < ApplicationController
   end
 
   def update
-    @setting = @school.school_setting || @school.build_school_setting
     if @setting.update(setting_params)
       render json: @setting
     else
@@ -28,6 +28,11 @@ class Api::SchoolSettingsController < ApplicationController
 
   def set_school
     @school = School.find(params[:school_id])
+  end
+
+  def set_setting
+    @setting = @school.school_setting
+    render json: { error: 'Setting not found' }, status: :not_found unless @setting
   end
 
   def setting_params

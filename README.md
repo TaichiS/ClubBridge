@@ -44,5 +44,11 @@
 - [x] **系統設定**
   - [x] 建立 `SchoolSetting` 模型，儲存學校專屬設定。
   - [x] 實作 `GET`, `POST`, `PATCH` API (`/api/schools/:school_id/setting`) 來管理設定。
-- [ ] **認證與授權**
-  - [ ] 建立初步的學校管理員認證機制，以保護上述 API。
+- [x] **認證與授權**
+  - [x] 建立 `User` 與 `Membership` 模型，實現多對多關聯。
+  - [x] 區分 `super_admin` 與 `school_user` 角色。
+  - [x] 實作基於 API Token 的認證機制。
+  - [x] 實作雙軌授權，保護所有 API 端點。
+- [ ] **API 文件**
+  - [ ] 整合 `rswag`，建立 API 文件系統。
+  - [ ] 為現有 API 撰寫 OpenAPI/Swagger 文件。

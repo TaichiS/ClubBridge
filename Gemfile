@@ -47,6 +47,11 @@ group :development, :test do
   # For generating Excel files for tests
   gem "caxlsx"
 
+  # For API documentation
+  gem 'rswag-api'
+  gem 'rswag-ui'
+  gem 'rswag-specs'
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 

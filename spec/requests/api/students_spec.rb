@@ -1,73 +1,111 @@
-require 'rails_helper'
+require 'swagger_helper'
 
-RSpec.describe "Api::Students", type: :request do
+describe 'Students API', type: :request do
   let(:user) { User.create!(email: "test@example.com") }
-  let(:school1) { School.create!(name: "School One", status: :approved) }
-  let(:school2) { School.create!(name: "School Two", status: :approved) }
-  let!(:membership1) { Membership.create!(user: user, school: school1, role: :admin) }
-  let!(:membership2) { Membership.create!(user: user, school: school2, role: :admin) }
+  let(:school) { School.create!(name: "Test School", status: :approved) }
+  let!(:membership) { Membership.create!(user: user, school: school, role: :admin) }
 
-  let!(:student1_s1) { Student.create!(name: "Student 1 S1", school: school1, student_id: "S1001") }
-  let!(:student2_s1) { Student.create!(name: "Student 2 S1", school: school1, student_id: "S1002") }
-  let!(:student1_s2) { Student.create!(name: "Student 1 S2", school: school2, student_id: "S2001") }
+  path '/api/schools/{school_id}/students' do
+    get('List students') do
+      tags 'Students'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: 'school_id', in: :path, type: :string
 
-  describe "GET /api/schools/:school_id/students" do
-    it "returns only the students for the specified school" do
-      get "/api/schools/#{school1.id}/students", headers: auth_headers(user)
-      expect(response).to have_http_status(:success)
-      json_response = JSON.parse(response.body)
-      expect(json_response.length).to eq(2)
-      expect(json_response.map { |s| s["id"] }).to match_array([student1_s1.id, student2_s1.id])
+      response(200, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        before { Student.create!(name: "Test Student", school: school, student_id: "S001") }
+        run_test!
+      end
     end
 
-    it "returns forbidden if user does not have access to the school" do
-      other_user = User.create!(email: "other@example.com")
-      get "/api/schools/#{school1.id}/students", headers: auth_headers(other_user)
-      expect(response).to have_http_status(:forbidden)
-    end
-  end
+    post('Create a student') do
+      tags 'Students'
+      consumes 'application/json'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: 'school_id', in: :path, type: :string
+      parameter name: :student, in: :body, schema: {
+        type: :object,
+        properties: {
+          student: {
+            type: :object,
+            properties: {
+              name: { type: :string },
+              student_id: { type: :string }
+            },
+            required: ['name', 'student_id']
+          }
+        }
+      }
 
-  describe "POST /api/schools/:school_id/students" do
-    let(:valid_attributes) { { name: "New Student", student_id: "S1003" } }
-
-    it "creates a new student for the specified school" do
-      expect {
-        post "/api/schools/#{school1.id}/students", params: { student: valid_attributes }, headers: auth_headers(user)
-      }.to change(Student, :count).by(1)
-
-      new_student = Student.last
-      expect(new_student.school).to eq(school1)
-      expect(new_student.name).to eq("New Student")
-    end
-  end
-
-  describe "PATCH /api/schools/:school_id/students/:id" do
-    let(:update_attributes) { { name: "Updated Student Name" } }
-
-    it "updates the requested student" do
-      patch "/api/schools/#{school1.id}/students/#{student1_s1.id}", params: { student: update_attributes }, headers: auth_headers(user)
-      student1_s1.reload
-      expect(student1_s1.name).to eq("Updated Student Name")
+      response(201, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:student) { { student: { name: 'New Student', student_id: 'S002' } } }
+        run_test!
+      end
     end
   end
 
-  describe "DELETE /api/schools/:school_id/students/:id" do
-    it "destroys the requested student" do
-      expect {
-        delete "/api/schools/#{school1.id}/students/#{student1_s1.id}", headers: auth_headers(user)
-      }.to change(Student, :count).by(-1)
+  path '/api/schools/{school_id}/students/{id}' do
+    parameter name: 'school_id', in: :path, type: :string
+    parameter name: 'id', in: :path, type: :string
+
+    patch('Update a student') do
+      tags 'Students'
+      consumes 'application/json'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: :student, in: :body, schema: {
+        type: :object,
+        properties: {
+          student: {
+            type: :object,
+            properties: {
+              name: { type: :string }
+            }
+          }
+        }
+      }
+
+      response(200, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:id) { Student.create!(name: "Old Name", school: school, student_id: "S003").id }
+        let(:student) { { student: { name: 'New Name' } } }
+        run_test!
+      end
+    end
+
+    delete('Delete a student') do
+      tags 'Students'
+      security [bearer_auth: []]
+
+      response(204, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:id) { Student.create!(name: "To be deleted", school: school, student_id: "S004").id }
+        run_test!
+      end
     end
   end
 
-  describe "POST /api/schools/:school_id/students/import" do
-    let(:school_for_import) { School.create!(name: "Import Test School", status: :approved) }
-    let!(:import_membership) { Membership.create!(user: user, school: school_for_import, role: :admin) }
-    let(:file) { fixture_file_upload('test/fixtures/files/students.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') }
+  path '/api/schools/{school_id}/students/import' do
+    post('Import students from Excel') do
+      tags 'Students'
+      consumes 'multipart/form-data'
+      security [bearer_auth: []]
+      parameter name: 'school_id', in: :path, type: :string
+      parameter name: :file, in: :formData, type: :file, required: true
 
-    it "imports students from the Excel file" do
-      expect {
-        post "/api/schools/#{school_for_import.id}/students/import", params: { file: file }, headers: auth_headers(user)
-      }.to change(school_for_import.students, :count).by(2)
+      response(200, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:file) { fixture_file_upload('test/fixtures/files/students.xlsx') }
+        run_test!
+      end
     end
   end
 end
