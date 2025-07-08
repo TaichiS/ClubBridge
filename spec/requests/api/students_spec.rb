@@ -84,4 +84,27 @@ RSpec.describe "Api::Students", type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe "POST /api/schools/:school_id/students/import" do
+    let(:school_for_import) { School.create!(name: "Import Test School", status: :approved) }
+    let(:file) { fixture_file_upload('test/fixtures/files/students.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') }
+
+    it "imports students from the Excel file" do
+      expect {
+        post "/api/schools/#{school_for_import.id}/students/import", params: { file: file }
+      }.to change(school_for_import.students, :count).by(2)
+    end
+
+    it "returns a success status" do
+      post "/api/schools/#{school_for_import.id}/students/import", params: { file: file }
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "does not import students for a different school" do
+      # School 2 should not have any new students
+      expect {
+        post "/api/schools/#{school_for_import.id}/students/import", params: { file: file }
+      }.to_not change(school2.students, :count)
+    end
+  end
 end

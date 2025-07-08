@@ -31,11 +31,11 @@
 
 這是下一個開發階段的計畫，主要專注於學校管理員在學期初需要用到的設定功能。
 
-- [ ] **學生資料管理**
-  - [ ] 根據規格書建立 `Student` 模型 (10個欄位)。
-  - [ ] 實作 `acts_as_tenant`，讓學生資料隸屬於特定學校。
-  - [ ] 實作 `POST /api/schools/:school_id/students/import` API，支援從 Excel 大量匯入學生。
-  - [ ] 實作學生資料的 CRUD API (`/api/schools/:school_id/students`)。
+- [x] **學生資料管理**
+  - [x] 根據規格書建立 `Student` 模型 (10個欄位)。
+  - [x] 實作 `acts_as_tenant`，讓學生資料隸屬於特定學校。
+  - [x] 實作 `POST /api/schools/:school_id/students/import` API，支援從 Excel 大量匯入學生。
+  - [x] 實作學生資料的 CRUD API (`/api/schools/:school_id/students`)。
 - [ ] **社團資料管理**
   - [ ] 根據規格書建立 `Club` 模型 (13個欄位)。
   - [ ] 實作 `acts_as_tenant`，讓社團資料隸屬於特定學校。
