@@ -32,6 +32,7 @@ Rails.application.routes.draw do
           post :import
         end
       end
+      resources :clubs, only: [:index, :create, :update, :destroy]
     end
   end
 end
