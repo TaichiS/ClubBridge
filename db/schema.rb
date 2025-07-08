@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_08_103543) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_08_132836) do
   create_table "clubs", force: :cascade do |t|
     t.string "category"
     t.string "club_number"
@@ -29,6 +29,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_08_103543) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["school_id"], name: "index_clubs_on_school_id"
+  end
+
+  create_table "school_settings", force: :cascade do |t|
+    t.text "welcome_message"
+    t.datetime "enrollment_start_time"
+    t.datetime "enrollment_end_time"
+    t.datetime "result_publication_start_time"
+    t.datetime "result_publication_end_time"
+    t.integer "school_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["school_id"], name: "index_school_settings_on_school_id"
   end
 
   create_table "schools", force: :cascade do |t|
@@ -56,5 +68,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_08_103543) do
   end
 
   add_foreign_key "clubs", "schools"
+  add_foreign_key "school_settings", "schools"
   add_foreign_key "students", "schools"
 end

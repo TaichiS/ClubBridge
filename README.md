@@ -36,11 +36,11 @@
   - [x] 實作 `acts_as_tenant`，讓學生資料隸屬於特定學校。
   - [x] 實作 `POST /api/schools/:school_id/students/import` API，支援從 Excel 大量匯入學生。
   - [x] 實作學生資料的 CRUD API (`/api/schools/:school_id/students`)。
-- [ ] **社團資料管理**
-  - [ ] 根據規格書建立 `Club` 模型 (13個欄位)。
-  - [ ] 實作 `acts_as_tenant`，讓社團資料隸屬於特定學校。
-  - [ ] 實作 `POST /api/schools/:school_id/clubs/import` API，支援從 Excel 大量匯入社團。
-  - [ ] 實作社團資料的 CRUD API (`/api/schools/:school_id/clubs`)。
+- [x] **社團資料管理**
+  - [x] 根據規格書建立 `Club` 模型 (13個欄位)。
+  - [x] 實作 `acts_as_tenant`，讓社團資料隸屬於特定學校。
+  - [x] 實作 `POST /api/schools/:school_id/clubs/import` API，支援從 Excel 大量匯入社團。
+  - [x] 實作社團資料的 CRUD API (`/api/schools/:school_id/clubs`)。
 - [ ] **系統設定**
   - [ ] 實作設定「進站說明」的 API。
   - [ ] 實作設定「活動日期」的 API。
