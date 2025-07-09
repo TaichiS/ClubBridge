@@ -39,6 +39,7 @@ Rails.application.routes.draw do
           post :import
         end
       end
+      resources :club_selections, only: [:create]
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
     end
   end

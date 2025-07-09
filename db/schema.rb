@@ -10,7 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_08_135454) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_09_133341) do
+  create_table "club_selections", force: :cascade do |t|
+    t.integer "student_id", null: false
+    t.integer "club_id", null: false
+    t.integer "school_id", null: false
+    t.integer "preference", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["club_id"], name: "index_club_selections_on_club_id"
+    t.index ["school_id"], name: "index_club_selections_on_school_id"
+    t.index ["student_id", "club_id"], name: "index_club_selections_on_student_id_and_club_id", unique: true
+    t.index ["student_id", "preference"], name: "index_club_selections_on_student_id_and_preference", unique: true
+    t.index ["student_id"], name: "index_club_selections_on_student_id"
+  end
+
   create_table "clubs", force: :cascade do |t|
     t.string "category"
     t.string "club_number"
@@ -87,6 +101,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_08_135454) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "club_selections", "clubs"
+  add_foreign_key "club_selections", "schools"
+  add_foreign_key "club_selections", "students"
   add_foreign_key "clubs", "schools"
   add_foreign_key "memberships", "schools"
   add_foreign_key "memberships", "users"
