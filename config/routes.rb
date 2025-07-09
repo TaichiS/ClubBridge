@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       resources :clubs, only: [:index, :create, :update, :destroy] do
         collection do
           post :import
+          get :hotness_report
         end
       end
       resources :club_selections, only: [:create]

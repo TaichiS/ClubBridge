@@ -3,6 +3,7 @@ class School < ApplicationRecord
 
   has_many :students, dependent: :destroy
   has_many :clubs, dependent: :destroy
+  has_many :club_selections, dependent: :destroy
   has_one :school_setting, dependent: :destroy
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships

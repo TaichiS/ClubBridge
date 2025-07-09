@@ -21,6 +21,18 @@ class Api::ClubsController < ApplicationController
     render json: Club.all
   end
 
+  def hotness_report
+    clubs_with_counts = Club
+      .left_joins(:club_selections)
+      .where(club_selections: { preference: 1 })
+      .or(Club.where.missing(:club_selections))
+      .group('clubs.id')
+      .select('clubs.*, COUNT(club_selections.id) as first_choice_count')
+      .order('first_choice_count DESC')
+
+    render json: clubs_with_counts.as_json(methods: :first_choice_count)
+  end
+
   def create
     club = Club.new(club_params)
     if club.save
