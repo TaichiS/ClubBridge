@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_09_133341) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_11_083954) do
   create_table "club_selections", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "club_id", null: false
@@ -97,6 +97,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_133341) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "role", default: "school_user", null: false
+    t.string "name"
     t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
   end

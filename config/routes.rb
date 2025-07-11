@@ -11,6 +11,14 @@ Rails.application.routes.draw do
   # root "posts#index"
 
   namespace :api do
+    # 認證路由
+    post 'auth/google', to: 'auth#google_login'
+    post 'auth/student', to: 'auth#student_login'
+    post 'auth/logout', to: 'auth#logout'
+    post 'auth/refresh', to: 'auth#refresh'
+    get 'auth/me', to: 'auth#me'
+    get 'auth/validate', to: 'auth#validate'
+
     namespace :admin do
       resources :schools, only: [] do
         collection do

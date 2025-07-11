@@ -33,7 +33,7 @@ gem "thruster", require: false
 # gem "image_processing", "~> 1.2"
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
-# gem "rack-cors"
+gem "rack-cors"
 
 # Multi-tenancy for Rails applications
 gem "acts_as_tenant"
@@ -42,6 +42,9 @@ gem "acts_as_tenant"
 gem "roo"
 gem "roo-xls"
 gem "csv"
+
+# For HTTP requests (Google OAuth verification)
+gem "net-http"
 
 group :development, :test do
   # For generating Excel files for tests

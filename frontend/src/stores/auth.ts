@@ -12,17 +12,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const userRole = computed(() => user.value?.role)
-  const isAdmin = computed(() => userRole.value === 'super_admin')
-  const isSchoolAdmin = computed(() => userRole.value === 'school_admin')
-  const isTeacher = computed(() => userRole.value === 'teacher')
+  const userRole = computed(() => user.value?.type)
+  const isAdmin = computed(() => userRole.value === 'user') // 將來會用 Pundit 處理具體角色
+  const isSchoolAdmin = computed(() => userRole.value === 'user')
+  const isTeacher = computed(() => userRole.value === 'user')
   const isStudent = computed(() => userRole.value === 'student')
 
   // Actions
   async function googleLogin(googleToken: string): Promise<void> {
     isLoading.value = true
     try {
-      const response: GoogleAuthResponse = await authApi.googleLogin(googleToken)
+      const response = await authApi.googleLogin(googleToken)
+      console.log('Google login response:', response) // 調試用
       
       setAuthData({
         user: response.user,
@@ -44,7 +45,15 @@ export const useAuthStore = defineStore('auth', () => {
       
       // 學生登入會自動設定學校
       setAuthData({
-        user: response.student as any, // 將 student 當作 user 使用
+        user: {
+          id: response.student.id,
+          name: response.student.name,
+          email: '', // 學生沒有 email
+          type: 'student',
+          student_id: response.student.student_id,
+          grade: response.student.grade,
+          class_name: response.student.class_name
+        },
         token: response.token,
         currentSchool: response.school.id
       })
