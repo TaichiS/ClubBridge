@@ -328,14 +328,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useStudentStore } from '@/stores/student'
 import { useAuthStore } from '@/stores/auth'
 import type { Student } from '@/types/student'
 
 const router = useRouter()
+const route = useRoute()
 const studentStore = useStudentStore()
 const authStore = useAuthStore()
+
+// 從路由獲取學校 ID
+const schoolId = computed(() => parseInt(route.params.schoolId as string))
 
 // 響應式狀態
 const students = ref<Student[]>([])
@@ -361,13 +365,15 @@ const newStudent = ref({
 const isLoading = computed(() => studentStore.isLoading)
 
 const filteredStudents = computed(() => {
+  if (!students.value || !Array.isArray(students.value)) return []
+  
   let filtered = students.value
 
   // 搜尋篩選
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(student => 
-      student.student_id.toLowerCase().includes(query) ||
+      (student.student_id || student.student_number || '').toLowerCase().includes(query) ||
       student.name.toLowerCase().includes(query) ||
       student.id_number.toLowerCase().includes(query)
     )
@@ -397,40 +403,44 @@ const totalPages = computed(() => {
 })
 
 const availableClasses = computed(() => {
+  if (!students.value || !Array.isArray(students.value)) return []
   const classes = [...new Set(students.value.map(s => s.class_name))]
   return classes.sort()
 })
 
 const studentsWithSelection = computed(() => {
-  return students.value.filter(student => student.has_selection)
+  if (!students.value || !Array.isArray(students.value)) return []
+  return students.value.filter(student => (student as any).has_selection)
 })
 
 const studentsWithoutSelection = computed(() => {
-  return students.value.filter(student => !student.has_selection)
+  if (!students.value || !Array.isArray(students.value)) return []
+  return students.value.filter(student => !(student as any).has_selection)
 })
 
 const assignedStudents = computed(() => {
-  return students.value.filter(student => student.assigned_club)
+  if (!students.value || !Array.isArray(students.value)) return []
+  return students.value.filter(student => (student as any).assigned_club)
 })
 
 // 方法
 const refreshData = async () => {
-  const currentSchool = authStore.currentSchool
-  if (!currentSchool) return
+  if (!schoolId.value) return
 
   try {
-    students.value = await studentStore.fetchStudents(currentSchool.id)
+    await studentStore.fetchStudents(schoolId.value)
+    // 從 store 獲取學生資料
+    students.value = studentStore.students
   } catch (error) {
     console.error('載入學生資料失敗:', error)
   }
 }
 
 const addStudent = async () => {
-  const currentSchool = authStore.currentSchool
-  if (!currentSchool) return
+  if (!schoolId.value) return
 
   try {
-    await studentStore.createStudent(currentSchool.id, {
+    await studentStore.createStudent(schoolId.value, {
       ...newStudent.value,
       grade: parseInt(newStudent.value.grade),
       seat_number: parseInt(newStudent.value.seat_number),
@@ -482,7 +492,11 @@ const resetNewStudentForm = () => {
 }
 
 const navigateTo = (path: string) => {
-  router.push(path)
+  if (!schoolId.value) return
+  
+  // 構建完整路徑，包含學校 ID
+  const fullPath = `/schools/${schoolId.value}/admin${path.replace('/school-admin', '')}`
+  router.push(fullPath)
 }
 
 const getGradeText = (grade: number) => {

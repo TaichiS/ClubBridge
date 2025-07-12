@@ -15,23 +15,24 @@ class Api::StudentsController < ApplicationController
   }.freeze
 
   def index
-    render json: Student.all
+    students = Student.all.includes(:school)
+    render json: students.map { |student| student_json(student) }
   end
 
   def create
     student = Student.new(student_params)
     if student.save
-      render json: student, status: :created
+      render json: student_json(student), status: :created
     else
-      render json: student.errors, status: :unprocessable_entity
+      render json: { errors: student.errors }, status: :unprocessable_entity
     end
   end
 
   def update
     if @student.update(student_params)
-      render json: @student
+      render json: student_json(@student)
     else
-      render json: @student.errors, status: :unprocessable_entity
+      render json: { errors: @student.errors }, status: :unprocessable_entity
     end
   end
 
@@ -42,7 +43,6 @@ class Api::StudentsController < ApplicationController
 
   def import
     file = params[:file]
-    school = School.find(params[:school_id])
     # TODO: Add file validation
 
     spreadsheet = Roo::Spreadsheet.open(file.path)
@@ -50,7 +50,7 @@ class Api::StudentsController < ApplicationController
 
     (2..spreadsheet.last_row).each do |i|
       row_data = Hash[[header, spreadsheet.row(i)].transpose]
-      student = school.students.build(row_data)
+      student = Student.new(row_data)
       unless student.save
         # Log error or handle it
         Rails.logger.error "Failed to import student: #{student.errors.full_messages.join(', ')}"
@@ -73,5 +73,24 @@ class Api::StudentsController < ApplicationController
       :grade, :class_number, :class_name, :seat_number, :student_id,
       :name, :id_card_number, :condition1, :condition2, :condition3
     )
+  end
+
+  def student_json(student)
+    {
+      id: student.id,
+      student_id: student.student_id,
+      name: student.name,
+      grade: student.grade,
+      class_number: student.class_number,
+      class_name: student.class_name,
+      seat_number: student.seat_number,
+      id_number: student.id_card_number,
+      condition1: student.condition1,
+      condition2: student.condition2,
+      condition3: student.condition3,
+      school_id: student.school_id,
+      created_at: student.created_at,
+      updated_at: student.updated_at
+    }
   end
 end
