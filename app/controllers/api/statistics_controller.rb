@@ -1,6 +1,10 @@
 class Api::StatisticsController < ApplicationController
   def show
     school_id = params[:school_id]
+    school = School.find(school_id)
+    
+    # 使用 School 來進行權限檢查
+    authorize school, :view_statistics?
     
     # 計算各種統計資料
     total_students = Student.where(school_id: school_id).count

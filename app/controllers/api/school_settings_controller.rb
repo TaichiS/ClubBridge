@@ -4,11 +4,13 @@ class Api::SchoolSettingsController < ApplicationController
 
   def show
     @setting = @school.school_setting || @school.build_school_setting
+    authorize @setting
     render json: @setting
   end
 
   def create
     @setting = @school.build_school_setting(setting_params)
+    authorize @setting
     if @setting.save
       render json: @setting, status: :created
     else
@@ -17,6 +19,7 @@ class Api::SchoolSettingsController < ApplicationController
   end
 
   def update
+    authorize @setting
     if @setting.update(setting_params)
       render json: @setting
     else
