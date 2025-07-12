@@ -20,12 +20,13 @@ Rails.application.routes.draw do
     get 'auth/validate', to: 'auth#validate'
 
     namespace :admin do
-      resources :schools, only: [] do
+      resources :schools, only: [:show] do
         collection do
           get :pending
         end
         member do
           post :approve
+          post :reject
         end
       end
     end

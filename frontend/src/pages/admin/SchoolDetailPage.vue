@@ -18,43 +18,139 @@
     </div>
 
     <div v-else-if="school" class="space-y-6">
-      <!-- 學校基本資訊 -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">基本資訊</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">學校名稱</label>
-            <p class="text-lg font-medium text-gray-900">{{ school.name }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">申請人姓名</label>
-            <p class="text-lg text-gray-900">{{ school.applicant_name }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">申請人電子郵件</label>
-            <p class="text-lg text-gray-900">{{ school.applicant_email }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">申請狀態</label>
+      <!-- 申請狀態卡片 -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-900">{{ school.name }}</h2>
             <span :class="getStatusClass(school.status)">
               {{ getStatusText(school.status) }}
             </span>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">建立時間</label>
-            <p class="text-lg text-gray-900">{{ formatDate(school.created_at) }}</p>
+          <p class="text-sm text-gray-600 mt-1">學校 ID: {{ school.id }}</p>
+        </div>
+        <div class="px-6 py-4">
+          <div class="flex items-center space-x-6 text-sm text-gray-600">
+            <div class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              申請時間：{{ formatDate(school.created_at) }}
+            </div>
+            <div v-if="school.updated_at !== school.created_at" class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              最後更新：{{ formatDate(school.updated_at) }}
+            </div>
           </div>
+        </div>
+      </div>
+
+      <!-- 學校基本資訊 -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-14 0h2m0 0h2m-6 0v-5a2 2 0 012-2h2a2 2 0 012 2v5"></path>
+          </svg>
+          <h2 class="text-xl font-semibold text-gray-900">學校基本資訊</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">更新時間</label>
-            <p class="text-lg text-gray-900">{{ formatDate(school.updated_at) }}</p>
+            <label class="form-label">學校名稱</label>
+            <p class="text-lg font-medium text-gray-900">{{ school.name }}</p>
+          </div>
+          <div v-if="school.school_type">
+            <label class="form-label">學校類型</label>
+            <p class="text-lg text-gray-900">{{ getSchoolTypeText(school.school_type) }}</p>
+          </div>
+          <div v-if="school.address">
+            <label class="form-label">學校地址</label>
+            <p class="text-lg text-gray-900">{{ school.address }}</p>
+          </div>
+          <div v-if="school.website">
+            <label class="form-label">學校網站</label>
+            <a :href="school.website" target="_blank" class="text-lg text-blue-600 hover:text-blue-800 underline">
+              {{ school.website }}
+            </a>
           </div>
         </div>
       </div>
 
       <!-- 學校描述 -->
-      <div v-if="school.description" class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">學校描述</h2>
-        <p class="text-gray-900 leading-relaxed">{{ school.description }}</p>
+      <div v-if="school.description" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <h2 class="text-xl font-semibold text-gray-900">學校簡介</h2>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+          <p class="text-gray-900 leading-relaxed whitespace-pre-wrap">{{ school.description }}</p>
+        </div>
+      </div>
+
+      <!-- 聯絡人資訊 -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          <h2 class="text-xl font-semibold text-gray-900">聯絡人資訊</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="form-label">聯絡人姓名</label>
+            <p class="text-lg font-medium text-gray-900">{{ school.contact_name || school.applicant_name || '未提供' }}</p>
+          </div>
+          <div v-if="school.contact_title">
+            <label class="form-label">聯絡人職稱</label>
+            <p class="text-lg text-gray-900">{{ school.contact_title }}</p>
+          </div>
+          <div>
+            <label class="form-label">聯絡信箱</label>
+            <a :href="`mailto:${school.contact_email || school.applicant_email}`" 
+               class="text-lg text-blue-600 hover:text-blue-800 underline">
+              {{ school.contact_email || school.applicant_email }}
+            </a>
+          </div>
+          <div v-if="school.contact_phone">
+            <label class="form-label">聯絡電話</label>
+            <a :href="`tel:${school.contact_phone}`" class="text-lg text-blue-600 hover:text-blue-800">
+              {{ school.contact_phone }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 使用需求 -->
+      <div v-if="hasUsageRequirements" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          <h2 class="text-xl font-semibold text-gray-900">使用需求</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-if="school.student_count">
+            <label class="form-label">預估學生人數</label>
+            <p class="text-lg text-gray-900">{{ getStudentCountText(school.student_count) }}</p>
+          </div>
+          <div v-if="school.club_count">
+            <label class="form-label">預估社團數量</label>
+            <p class="text-lg text-gray-900">{{ getClubCountText(school.club_count) }}</p>
+          </div>
+          <div v-if="school.expected_start_date">
+            <label class="form-label">預計使用時間</label>
+            <p class="text-lg text-gray-900">{{ formatDate(school.expected_start_date) }}</p>
+          </div>
+        </div>
+        <div v-if="school.notes" class="mt-6">
+          <label class="form-label">其他需求或備註</label>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-gray-900 leading-relaxed whitespace-pre-wrap">{{ school.notes }}</p>
+          </div>
+        </div>
       </div>
 
       <!-- 學校設定 -->
@@ -173,7 +269,7 @@
             <textarea
               v-model="rejectReason"
               placeholder="請輸入拒絕理由（選填）..."
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
               rows="4"
             ></textarea>
           </div>
@@ -219,6 +315,14 @@ const rejectReason = ref('')
 // 計算屬性
 const isLoading = computed(() => schoolStore.isLoading)
 const schoolId = computed(() => parseInt(route.params.id as string))
+const hasUsageRequirements = computed(() => {
+  return school.value && (
+    school.value.student_count || 
+    school.value.club_count || 
+    school.value.expected_start_date || 
+    school.value.notes
+  )
+})
 
 // 方法
 const refreshData = async () => {
@@ -329,6 +433,57 @@ const getStatusText = (status: string) => {
       return '已拒絕'
     default:
       return '未知'
+  }
+}
+
+const getSchoolTypeText = (type: string) => {
+  switch (type) {
+    case 'elementary':
+      return '國小'
+    case 'junior_high':
+      return '國中'
+    case 'senior_high':
+      return '高中'
+    case 'vocational':
+      return '高職'
+    case 'university':
+      return '大學'
+    default:
+      return type
+  }
+}
+
+const getStudentCountText = (count: string) => {
+  switch (count) {
+    case '100':
+      return '100 人以下'
+    case '500':
+      return '100-500 人'
+    case '1000':
+      return '500-1000 人'
+    case '2000':
+      return '1000-2000 人'
+    case '2000+':
+      return '2000 人以上'
+    default:
+      return count
+  }
+}
+
+const getClubCountText = (count: string) => {
+  switch (count) {
+    case '10':
+      return '10 個以下'
+    case '30':
+      return '10-30 個'
+    case '50':
+      return '30-50 個'
+    case '100':
+      return '50-100 個'
+    case '100+':
+      return '100 個以上'
+    default:
+      return count
   }
 }
 

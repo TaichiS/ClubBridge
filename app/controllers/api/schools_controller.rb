@@ -11,6 +11,11 @@ class Api::SchoolsController < ApplicationController
   private
 
   def school_params
-    params.require(:school).permit(:name)
+    params.require(:school).permit(
+      :name, :school_type, :address, :website, :description,
+      :contact_name, :contact_title, :contact_email, :contact_phone,
+      :student_count, :club_count, :expected_start_date, :notes,
+      :applicant_name, :applicant_email
+    )
   end
 end

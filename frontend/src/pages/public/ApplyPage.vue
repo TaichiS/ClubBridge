@@ -309,8 +309,20 @@ async function handleSubmit() {
   try {
     await schoolStore.applySchool({
       name: form.value.name.trim(),
+      school_type: form.value.school_type,
+      address: form.value.address,
+      website: form.value.website,
       description: form.value.description,
-      contact_email: form.value.contact_email.trim()
+      contact_name: form.value.contact_name.trim(),
+      contact_title: form.value.contact_title,
+      contact_email: form.value.contact_email.trim(),
+      contact_phone: form.value.contact_phone,
+      student_count: form.value.student_count,
+      club_count: form.value.club_count,
+      expected_start_date: form.value.expected_start_date,
+      notes: form.value.notes,
+      applicant_name: form.value.contact_name.trim(), // 使用聯絡人姓名作為申請人姓名
+      applicant_email: form.value.contact_email.trim() // 使用聯絡信箱作為申請人信箱
     })
     
     isSuccess.value = true

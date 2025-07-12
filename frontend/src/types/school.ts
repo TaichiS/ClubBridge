@@ -1,9 +1,21 @@
 export interface School {
   id: number
   name: string
+  school_type?: string
+  address?: string
+  website?: string
   description?: string
+  contact_name?: string
+  contact_title?: string
+  contact_email?: string
+  contact_phone?: string
+  student_count?: string
+  club_count?: string
+  expected_start_date?: string
+  notes?: string
   applicant_name?: string
   applicant_email?: string
+  rejection_reason?: string
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
   updated_at: string
@@ -26,8 +38,20 @@ export interface SchoolSetting {
 
 export interface SchoolApplication {
   name: string
+  school_type?: string
+  address?: string
+  website?: string
   description?: string
+  contact_name?: string
+  contact_title?: string
   contact_email?: string
+  contact_phone?: string
+  student_count?: string
+  club_count?: string
+  expected_start_date?: string
+  notes?: string
+  applicant_name?: string
+  applicant_email?: string
 }
 
 export interface SchoolStatistics {

@@ -9,12 +9,12 @@ import type {
 export const schoolApi = {
   // 申請新學校
   async applySchool(application: SchoolApplication): Promise<School> {
-    return apiClient.post('/api/schools/apply', application)
+    return apiClient.post('/api/schools/apply', { school: application })
   },
 
   // 獲取學校資訊
   async getSchool(schoolId: number): Promise<School> {
-    return apiClient.get(`/api/schools/${schoolId}`)
+    return apiClient.get(`/api/admin/schools/${schoolId}`)
   },
 
   // 更新學校資訊
