@@ -232,14 +232,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useSchoolStore } from '@/stores/school'
-import { useAuthStore } from '@/stores/auth'
-import type { School, SchoolSetting, SchoolStatistics } from '@/types/school'
+import type { SchoolStatistics } from '@/types/school'
 
 const router = useRouter()
+const route = useRoute()
 const schoolStore = useSchoolStore()
-const authStore = useAuthStore()
 
 // 響應式狀態
 const statistics = ref<SchoolStatistics | null>(null)
@@ -249,21 +248,21 @@ const isLoading = computed(() => schoolStore.isLoading)
 const school = computed(() => schoolStore.current)
 const settings = computed(() => schoolStore.settings)
 const isRegistrationOpen = computed(() => settings.value?.is_registration_open || false)
+const currentSchoolId = computed(() => parseInt(route.params.schoolId as string))
 
 // 方法
 const refreshData = async () => {
-  const currentSchool = authStore.currentSchool
-  if (!currentSchool) return
+  if (!currentSchoolId.value) return
   
   try {
     // 載入學校基本資訊
-    await schoolStore.fetchSchool(currentSchool.id)
+    await schoolStore.fetchSchool(currentSchoolId.value)
     
     // 載入設定
-    await schoolStore.fetchSettings(currentSchool.id)
+    await schoolStore.fetchSettings(currentSchoolId.value)
     
     // 載入統計資料
-    await schoolStore.fetchStatistics(currentSchool.id)
+    await schoolStore.fetchStatistics(currentSchoolId.value)
     statistics.value = schoolStore.statistics
   } catch (error) {
     console.error('載入儀表板資料失敗:', error)
@@ -271,11 +270,10 @@ const refreshData = async () => {
 }
 
 const toggleRegistration = async () => {
-  const currentSchool = authStore.currentSchool
-  if (!currentSchool || !settings.value) return
+  if (!currentSchoolId.value || !settings.value) return
   
   try {
-    await schoolStore.updateSettings(currentSchool.id, {
+    await schoolStore.updateSettings(currentSchoolId.value, {
       is_registration_open: !settings.value.is_registration_open
     })
     alert(`選社系統已${settings.value.is_registration_open ? '開啟' : '關閉'}`)
@@ -286,8 +284,7 @@ const toggleRegistration = async () => {
 }
 
 const startAssignment = async () => {
-  const currentSchool = authStore.currentSchool
-  if (!currentSchool) return
+  if (!currentSchoolId.value) return
   
   if (!confirm('確定要開始執行學生分發嗎？此操作不可逆轉。')) {
     return
@@ -295,7 +292,7 @@ const startAssignment = async () => {
   
   try {
     // 這裡需要調用分發 API
-    // await assignmentApi.startAssignment(currentSchool.id)
+    // await assignmentApi.startAssignment(currentSchoolId.value)
     alert('分發程序已啟動')
     await refreshData()
   } catch (error) {
@@ -305,7 +302,11 @@ const startAssignment = async () => {
 }
 
 const navigateTo = (path: string) => {
-  router.push(path)
+  if (!currentSchoolId.value) return
+  
+  // 構建完整路徑，包含學校 ID
+  const fullPath = `/schools/${currentSchoolId.value}/admin${path.replace('/school-admin', '')}`
+  router.push(fullPath)
 }
 
 const formatDate = (dateString: string) => {

@@ -7,8 +7,12 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true
 
-  # 將來會使用 Pundit 和 roles 來處理權限
-  # 這裡不應該有 enum :role
+  # 使用者角色定義
+  enum :user_role, {
+    school_admin: 0,    # 學校管理員（預設）
+    super_admin: 1,     # 超級管理員
+    teacher: 2          # 社團老師
+  }
 
   private
 

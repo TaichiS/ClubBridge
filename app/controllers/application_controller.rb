@@ -1,7 +1,12 @@
 class ApplicationController < ActionController::API
+  include Pundit::Authorization
+  
   set_current_tenant_through_filter
   before_action :authenticate_user!
   before_action :set_tenant
+  
+  # Pundit 的錯誤處理
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   private
 
@@ -44,14 +49,27 @@ class ApplicationController < ActionController::API
 
   def find_accessible_school(school_id)
     if @current_user
-      # User 可以訪問其所屬的學校
-      # 將來會用 Pundit 來處理更複雜的權限
-      @current_user.schools.find_by(id: school_id)
+      school = School.find_by(id: school_id)
+      return nil unless school
+      
+      # 使用 Pundit 檢查權限
+      authorize school, :show?
+      school
     elsif @current_student
       # 學生只能訪問自己的學校
       @current_school if @current_school.id == school_id.to_i
     else
       nil
     end
+  rescue Pundit::NotAuthorizedError
+    nil
+  end
+
+  def user_not_authorized
+    render json: { error: 'Forbidden' }, status: :forbidden
+  end
+
+  def current_user
+    @current_user
   end
 end

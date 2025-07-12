@@ -51,6 +51,7 @@ Rails.application.routes.draw do
       end
       resources :club_selections, only: [:create]
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
+      get :statistics, to: 'statistics#show'
     end
   end
 end
