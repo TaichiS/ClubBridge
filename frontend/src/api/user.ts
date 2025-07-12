@@ -29,10 +29,18 @@ export interface UsersResponse {
 
 export const userApi = {
   // 獲取用戶列表
-  async getUsers(page: number = 1, perPage: number = 20): Promise<UsersResponse> {
-    return apiClient.get('/api/admin/users', {
-      params: { page, per_page: perPage }
-    })
+  async getUsers(page: number = 1, perPage: number = 20, search?: string, role?: string): Promise<UsersResponse> {
+    const params: any = { page, per_page: perPage }
+    
+    if (search && search.trim()) {
+      params.search = search.trim()
+    }
+    
+    if (role && role.trim()) {
+      params.role = role.trim()
+    }
+    
+    return apiClient.get('/api/admin/users', { params })
   },
 
   // 獲取單一用戶

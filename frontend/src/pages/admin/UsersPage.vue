@@ -13,25 +13,54 @@
 
     <!-- 搜尋和篩選 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">搜尋與篩選</h3>
+        <button
+          v-if="searchQuery || roleFilter"
+          @click="clearAllFilters"
+          class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          <i class="fas fa-undo mr-1"></i>
+          重置篩選
+        </button>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="form-label">搜尋用戶</label>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜尋姓名或信箱..."
-            class="form-input"
-            @input="debouncedSearch"
-          />
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜尋姓名或信箱..."
+              class="form-input pr-10"
+              @input="debouncedSearch"
+            />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
         </div>
         <div>
           <label class="form-label">角色篩選</label>
-          <select v-model="roleFilter" class="form-input" @change="applyFilters">
-            <option value="">所有角色</option>
-            <option value="super_admin">超級管理員</option>
-            <option value="school_admin">學校管理員</option>
-            <option value="teacher">社團老師</option>
-          </select>
+          <div class="flex space-x-2">
+            <select v-model="roleFilter" class="form-input flex-1" @change="applyFilters">
+              <option value="">所有角色</option>
+              <option value="super_admin">超級管理員</option>
+              <option value="school_admin">學校管理員</option>
+              <option value="teacher">社團老師</option>
+            </select>
+            <button
+              v-if="roleFilter"
+              @click="clearRoleFilter"
+              class="px-3 py-2 text-gray-400 hover:text-gray-600 border border-gray-300 rounded-md"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
         </div>
         <div>
           <label class="form-label">顯示筆數</label>
@@ -46,6 +75,16 @@
 
     <!-- 用戶列表 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-medium text-gray-900">用戶列表</h3>
+          <div v-if="searchQuery || roleFilter" class="text-sm text-gray-500">
+            <span v-if="searchQuery">搜尋: "{{ searchQuery }}"</span>
+            <span v-if="searchQuery && roleFilter"> | </span>
+            <span v-if="roleFilter">角色: {{ getRoleText(roleFilter) }}</span>
+          </div>
+        </div>
+      </div>
       <div v-if="isLoading" class="p-8 text-center">
         <div class="text-lg text-gray-600">載入中...</div>
       </div>
@@ -322,7 +361,12 @@ const availableSchools = computed(() => {
 const loadUsers = async (page: number = 1) => {
   isLoading.value = true
   try {
-    const response = await userApi.getUsers(page, perPage.value)
+    const response = await userApi.getUsers(
+      page, 
+      perPage.value, 
+      searchQuery.value,
+      roleFilter.value
+    )
     users.value = response.users
     meta.value = response.meta
   } catch (error) {
@@ -346,15 +390,34 @@ const refreshUsers = () => {
 }
 
 const applyFilters = () => {
-  // TODO: 實作篩選邏輯
   loadUsers(1)
 }
 
+// 防抖搜尋
+let searchTimeout: number | null = null
 const debouncedSearch = () => {
-  // TODO: 實作搜尋邏輯
-  setTimeout(() => {
-    applyFilters()
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  searchTimeout = setTimeout(() => {
+    loadUsers(1)
   }, 300)
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  loadUsers(1)
+}
+
+const clearRoleFilter = () => {
+  roleFilter.value = ''
+  loadUsers(1)
+}
+
+const clearAllFilters = () => {
+  searchQuery.value = ''
+  roleFilter.value = ''
+  loadUsers(1)
 }
 
 const openEditModal = (user: User) => {
@@ -479,6 +542,15 @@ const formatDate = (dateString: string) => {
     month: '2-digit',
     day: '2-digit'
   })
+}
+
+const getRoleText = (role: string) => {
+  switch (role) {
+    case 'super_admin': return '超級管理員'
+    case 'school_admin': return '學校管理員'
+    case 'teacher': return '社團老師'
+    default: return role
+  }
 }
 
 // 生命週期

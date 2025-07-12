@@ -4,9 +4,21 @@ class Api::Admin::UsersController < ApplicationController
 
   def index
     users = User.includes(:schools, :memberships)
-                .order(:created_at)
-                .page(params[:page])
-                .per(params[:per_page] || 20)
+    
+    # 搜尋功能：根據姓名或信箱搜尋
+    if params[:search].present?
+      search_term = "%#{params[:search]}%"
+      users = users.where("name LIKE ? OR email LIKE ?", search_term, search_term)
+    end
+    
+    # 角色篩選
+    if params[:role].present?
+      users = users.where(user_role: params[:role])
+    end
+    
+    users = users.order(:created_at)
+                 .page(params[:page])
+                 .per(params[:per_page] || 20)
     
     render json: {
       users: users.map { |user| user_with_details(user) },
