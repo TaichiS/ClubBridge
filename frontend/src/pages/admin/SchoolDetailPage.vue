@@ -393,7 +393,7 @@ const confirmReject = async () => {
 
 const viewSchoolSystem = () => {
   // 跳轉到該學校的管理系統
-  router.push(`/school/${schoolId.value}/admin`)
+  router.push(`/schools/${schoolId.value}/admin`)
 }
 
 const goBack = () => {

@@ -48,6 +48,12 @@ const router = createRouter({
       ]
     },
 
+    // 處理單數形式的 school URL 重定向到複數形式
+    {
+      path: '/school/:schoolId',
+      redirect: to => `/schools/${to.params.schoolId}`
+    },
+
     // 學校路由（支援多租戶）
     {
       path: '/schools/:schoolId',
