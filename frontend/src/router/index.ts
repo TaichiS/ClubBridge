@@ -23,7 +23,7 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('@/layouts/AdminLayout.vue'),
-      meta: { requiresAuth: true, role: 'user' },
+      meta: { requiresAuth: true, role: 'super_admin' },
       children: [
         {
           path: '',
@@ -59,7 +59,7 @@ const router = createRouter({
           path: 'admin',
           name: 'school-admin',
           component: () => import('@/layouts/SchoolAdminLayout.vue'),
-          meta: { role: 'user' },
+          meta: { role: 'school_admin' },
           children: [
             {
               path: '',
@@ -109,7 +109,7 @@ const router = createRouter({
           path: 'teacher',
           name: 'teacher',
           component: () => import('@/layouts/TeacherLayout.vue'),
-          meta: { role: 'user' },
+          meta: { role: 'school_admin' },
           children: [
             {
               path: '',
@@ -228,23 +228,30 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 檢查角色權限
-  if (to.meta.role && authStore.userRole !== to.meta.role) {
-    // 角色不匹配時的處理
-    if (authStore.isAuthenticated) {
-      // 根據使用者角色重定向到適當的頁面
-      switch (authStore.userRole) {
-        case 'user':
-          // 對於 Google 登入的用戶，導向管理員頁面
+  if (to.meta.role) {
+    const requiredRole = to.meta.role as string
+    const hasPermission = checkRolePermission(authStore, requiredRole)
+    
+    if (!hasPermission) {
+      // 角色不匹配時的處理
+      if (authStore.isAuthenticated) {
+        // 根據使用者角色重定向到適當的頁面
+        if (authStore.isSuperAdmin) {
           return next('/admin')
-        case 'student':
+        } else if (authStore.isSchoolAdmin) {
+          // 嘗試重定向到用戶有權限的學校
+          if (authStore.currentSchool) {
+            return next(`/schools/${authStore.currentSchool}/admin`)
+          }
+        } else if (authStore.isStudent) {
           const studentSchoolId = authStore.currentSchool
           if (studentSchoolId) {
             return next(`/schools/${studentSchoolId}/student`)
           }
-          break
+        }
       }
+      return next('/')
     }
-    return next('/')
   }
 
   // 設定當前學校 ID（如果路由包含 schoolId）
@@ -257,5 +264,21 @@ router.beforeEach(async (to, from, next) => {
 
   next()
 })
+
+// 角色權限檢查函數
+function checkRolePermission(authStore: any, requiredRole: string): boolean {
+  switch (requiredRole) {
+    case 'super_admin':
+      return authStore.isSuperAdmin
+    case 'school_admin':
+      return authStore.isSchoolAdmin || authStore.isSuperAdmin
+    case 'teacher':
+      return authStore.isTeacher || authStore.isSchoolAdmin || authStore.isSuperAdmin
+    case 'student':
+      return authStore.isStudent
+    default:
+      return false
+  }
+}
 
 export default router

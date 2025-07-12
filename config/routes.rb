@@ -29,6 +29,13 @@ Rails.application.routes.draw do
           post :reject
         end
       end
+      
+      resources :users, only: [:index, :show, :update] do
+        member do
+          post :add_school
+          delete :remove_school
+        end
+      end
     end
 
     resources :schools, only: [] do

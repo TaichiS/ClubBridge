@@ -95,9 +95,35 @@ export function useAuth() {
     console.log('Redirecting after login:', { role, schoolId }) // 調試用
 
     switch (role) {
-      case 'user':
-        // 對於 Google 登入的用戶，根據情況導向管理員頁面
+      case 'super_admin':
+        // 超級管理員導向管理員後台
         router.push('/admin')
+        break
+      case 'school_admin':
+        // 學校管理員導向學校管理頁面
+        if (schoolId) {
+          router.push(`/schools/${schoolId}/admin`)
+        } else {
+          // 如果沒有指定學校，檢查用戶是否有學校權限
+          const userSchools = authStore.user?.schools
+          if (userSchools && userSchools.length > 0) {
+            const firstSchool = userSchools[0]
+            authStore.setCurrentSchool(firstSchool.id)
+            router.push(`/schools/${firstSchool.id}/admin`)
+          } else {
+            // 沒有學校權限，導向首頁
+            console.log('School admin has no schools, redirecting to home')
+            router.push('/')
+          }
+        }
+        break
+      case 'teacher':
+        // 社團老師導向社團管理頁面
+        if (schoolId) {
+          router.push(`/schools/${schoolId}/teacher`)
+        } else {
+          router.push('/admin')
+        }
         break
       case 'student':
         if (schoolId) {

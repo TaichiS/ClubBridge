@@ -12,11 +12,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const userRole = computed(() => user.value?.type)
-  const isAdmin = computed(() => userRole.value === 'user') // 將來會用 Pundit 處理具體角色
-  const isSchoolAdmin = computed(() => userRole.value === 'user')
-  const isTeacher = computed(() => userRole.value === 'user')
-  const isStudent = computed(() => userRole.value === 'student')
+  const userRole = computed(() => user.value?.user_role || user.value?.type)
+  const isSuperAdmin = computed(() => userRole.value === 'super_admin')
+  const isSchoolAdmin = computed(() => userRole.value === 'school_admin')
+  const isTeacher = computed(() => userRole.value === 'teacher')
+  const isStudent = computed(() => user.value?.type === 'student')
 
   // Actions
   async function googleLogin(googleToken: string): Promise<void> {
@@ -151,7 +151,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Getters
     isAuthenticated,
     userRole,
-    isAdmin,
+    isSuperAdmin,
     isSchoolAdmin,
     isTeacher,
     isStudent,

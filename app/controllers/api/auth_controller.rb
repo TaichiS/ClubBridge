@@ -19,12 +19,23 @@ class Api::AuthController < ApplicationController
       # 確保有 API Token
       user.update!(api_token: SecureRandom.hex(32)) if user.api_token.blank?
       
+      schools = user.schools.map do |school|
+        membership = user.memberships.find_by(school: school)
+        {
+          id: school.id,
+          name: school.name,
+          membership_role: membership&.role
+        }
+      end
+
       render json: {
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
-          type: 'user'
+          type: 'user',
+          user_role: user.user_role,
+          schools: schools
         },
         token: user.api_token
       }
@@ -91,11 +102,22 @@ class Api::AuthController < ApplicationController
   # GET /api/auth/me
   def me
     if @current_user
+      schools = @current_user.schools.map do |school|
+        membership = @current_user.memberships.find_by(school: school)
+        {
+          id: school.id,
+          name: school.name,
+          membership_role: membership&.role
+        }
+      end
+
       render json: {
         id: @current_user.id,
         name: @current_user.name,
         email: @current_user.email,
-        type: 'user'
+        type: 'user',
+        user_role: @current_user.user_role,
+        schools: schools
       }
     elsif @current_student
       render json: {

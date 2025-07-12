@@ -3,6 +3,8 @@ export interface User {
   name: string
   email: string
   type: 'user' | 'student'
+  user_role?: 'super_admin' | 'school_admin' | 'teacher'
+  schools?: UserSchool[]
   // 學生專用欄位 (當 type 為 'student' 時)
   student_id?: string
   grade?: number
@@ -11,6 +13,12 @@ export interface User {
   api_token?: string
   created_at?: string
   updated_at?: string
+}
+
+export interface UserSchool {
+  id: number
+  name: string
+  membership_role: string
 }
 
 export interface Membership {
