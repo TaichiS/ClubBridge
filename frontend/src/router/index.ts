@@ -23,7 +23,7 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('@/layouts/AdminLayout.vue'),
-      meta: { requiresAuth: true, role: 'super_admin' },
+      meta: { requiresAuth: true, role: 'user' },
       children: [
         {
           path: '',
@@ -59,7 +59,7 @@ const router = createRouter({
           path: 'admin',
           name: 'school-admin',
           component: () => import('@/layouts/SchoolAdminLayout.vue'),
-          meta: { role: 'school_admin' },
+          meta: { role: 'user' },
           children: [
             {
               path: '',
@@ -109,7 +109,7 @@ const router = createRouter({
           path: 'teacher',
           name: 'teacher',
           component: () => import('@/layouts/TeacherLayout.vue'),
-          meta: { role: 'teacher' },
+          meta: { role: 'user' },
           children: [
             {
               path: '',
@@ -197,6 +197,16 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
+  // 只在需要認證或有角色要求的路由顯示調試信息
+  if (to.meta.requiresAuth || to.meta.role) {
+    console.log('Route guard:', { 
+      to: to.path, 
+      userRole: authStore.userRole, 
+      isAuthenticated: authStore.isAuthenticated,
+      toRole: to.meta.role 
+    })
+  }
+
   // 初始化認證狀態（僅第一次）
   if (!authStore.user && authStore.token) {
     try {
@@ -223,20 +233,9 @@ router.beforeEach(async (to, from, next) => {
     if (authStore.isAuthenticated) {
       // 根據使用者角色重定向到適當的頁面
       switch (authStore.userRole) {
-        case 'super_admin':
+        case 'user':
+          // 對於 Google 登入的用戶，導向管理員頁面
           return next('/admin')
-        case 'school_admin':
-          const schoolId = authStore.currentSchool
-          if (schoolId) {
-            return next(`/schools/${schoolId}/admin`)
-          }
-          break
-        case 'teacher':
-          const teacherSchoolId = authStore.currentSchool
-          if (teacherSchoolId) {
-            return next(`/schools/${teacherSchoolId}/teacher`)
-          }
-          break
         case 'student':
           const studentSchoolId = authStore.currentSchool
           if (studentSchoolId) {

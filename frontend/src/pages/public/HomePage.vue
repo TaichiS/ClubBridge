@@ -154,12 +154,8 @@ const userDisplayName = computed(() => {
 
 const roleDisplayName = computed(() => {
   switch (userRole.value) {
-    case 'super_admin':
-      return '超級管理員'
-    case 'school_admin':
-      return '學校管理員'
-    case 'teacher':
-      return '社團老師'
+    case 'user':
+      return '管理員'
     case 'student':
       return '學生'
     default:

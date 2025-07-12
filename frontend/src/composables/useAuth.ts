@@ -92,24 +92,12 @@ export function useAuth() {
     const role = authStore.userRole
     const schoolId = authStore.currentSchool
 
+    console.log('Redirecting after login:', { role, schoolId }) // 調試用
+
     switch (role) {
-      case 'super_admin':
+      case 'user':
+        // 對於 Google 登入的用戶，根據情況導向管理員頁面
         router.push('/admin')
-        break
-      case 'school_admin':
-        if (schoolId) {
-          router.push(`/schools/${schoolId}/admin`)
-        } else {
-          // 如果沒有學校，需要選擇學校
-          router.push('/select-school')
-        }
-        break
-      case 'teacher':
-        if (schoolId) {
-          router.push(`/schools/${schoolId}/teacher`)
-        } else {
-          router.push('/select-school')
-        }
         break
       case 'student':
         if (schoolId) {
@@ -119,6 +107,7 @@ export function useAuth() {
         }
         break
       default:
+        console.log('Unknown role, redirecting to home')
         router.push('/')
     }
   }
