@@ -158,7 +158,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="student in paginatedStudents" :key="student.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ student.student_id }}
+                {{ student.student_number || student.student_id || '無學號' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ student.name }}
@@ -191,13 +191,13 @@
                   查看
                 </button>
                 <button
-                  @click="editStudent(student)"
+                  @click="editStudentDetail(student)"
                   class="text-green-600 hover:text-green-900 mr-3"
                 >
                   編輯
                 </button>
                 <button
-                  @click="deleteStudent(student.id)"
+                  @click="deleteStudent(student.id, student.name)"
                   class="text-red-600 hover:text-red-900"
                 >
                   刪除
@@ -323,6 +323,253 @@
         </div>
       </div>
     </div>
+
+    <!-- 查看學生詳情對話框 -->
+    <div v-if="showViewStudentModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+      <div class="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 transform transition-all">
+        <div v-if="selectedStudent" class="relative">
+          <!-- 標題區域 -->
+          <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-xl px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-white">{{ selectedStudent.name }}</h3>
+                  <p class="text-blue-100 text-sm">學號：{{ selectedStudent.student_number || selectedStudent.student_id || '無學號' }}</p>
+                </div>
+              </div>
+              <button
+                @click="showViewStudentModal = false"
+                class="text-white hover:text-gray-200 transition-colors"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 內容區域 -->
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- 基本資料 -->
+              <div class="space-y-4">
+                <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">基本資料</h4>
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">年級班級</p>
+                      <p class="font-medium text-gray-900">{{ getGradeText(selectedStudent.grade) }} {{ selectedStudent.class_name }}班</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">座號</p>
+                      <p class="font-medium text-gray-900">{{ selectedStudent.seat_number }} 號</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">身分證字號</p>
+                      <p class="font-medium text-gray-900 font-mono">{{ selectedStudent.id_number }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 選社狀態 -->
+              <div class="space-y-4">
+                <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">選社狀態</h4>
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm text-gray-600">選社狀態</p>
+                      <div class="mt-1">
+                        <span v-if="(selectedStudent as any).has_selection" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          已選社
+                        </span>
+                        <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          未選社
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm text-gray-600">分發結果</p>
+                      <div class="mt-1">
+                        <span v-if="(selectedStudent as any).assigned_club" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {{ (selectedStudent as any).assigned_club }}
+                        </span>
+                        <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          未分發
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 底部按鈕 -->
+          <div class="bg-gray-50 rounded-b-xl px-6 py-4">
+            <div class="flex justify-end space-x-3">
+              <button
+                @click="showViewStudentModal = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              >
+                關閉
+              </button>
+              <button
+                @click="editStudentDetail(selectedStudent); showViewStudentModal = false"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              >
+                編輯學生
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 編輯學生對話框 -->
+    <div v-if="showEditStudentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">編輯學生</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">學號</label>
+              <input
+                v-model="editStudent.student_id"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+              <input
+                v-model="editStudent.name"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                required
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">年級</label>
+                <select
+                  v-model="editStudent.grade"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                >
+                  <option value="">選擇年級</option>
+                  <option value="1">國一</option>
+                  <option value="2">國二</option>
+                  <option value="3">國三</option>
+                  <option value="4">高一</option>
+                  <option value="5">高二</option>
+                  <option value="6">高三</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">班級</label>
+                <input
+                  v-model="editStudent.class_name"
+                  type="text"
+                  placeholder="例: 忠"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">座號</label>
+              <input
+                v-model="editStudent.seat_number"
+                type="number"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">身分證字號</label>
+              <input
+                v-model="editStudent.id_number"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                required
+              />
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3 mt-6">
+            <button
+              @click="showEditStudentModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 text-gray-800"
+            >
+              取消
+            </button>
+            <button
+              @click="updateStudent"
+              :disabled="isLoading"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {{ isLoading ? '更新中...' : '更新' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -348,11 +595,24 @@ const selectedGrade = ref('')
 const selectedClass = ref('')
 const selectedStatus = ref('')
 const showAddStudentModal = ref(false)
+const showViewStudentModal = ref(false)
+const showEditStudentModal = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(20)
+const selectedStudent = ref<Student | null>(null)
 
 // 新增學生表單
 const newStudent = ref({
+  student_id: '',
+  name: '',
+  grade: '',
+  class_name: '',
+  seat_number: '',
+  id_number: ''
+})
+
+// 編輯學生表單
+const editStudent = ref({
   student_id: '',
   name: '',
   grade: '',
@@ -373,7 +633,7 @@ const filteredStudents = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(student => 
-      (student.student_id || student.student_number || '').toLowerCase().includes(query) ||
+      (student.student_number || (student as any).student_id || '').toLowerCase().includes(query) ||
       student.name.toLowerCase().includes(query) ||
       student.id_number.toLowerCase().includes(query)
     )
@@ -431,6 +691,10 @@ const refreshData = async () => {
     await studentStore.fetchStudents(schoolId.value)
     // 從 store 獲取學生資料
     students.value = studentStore.students
+    console.log('載入的學生資料:', students.value)
+    if (students.value.length > 0) {
+      console.log('第一個學生的資料結構:', students.value[0])
+    }
   } catch (error) {
     console.error('載入學生資料失敗:', error)
   }
@@ -441,9 +705,12 @@ const addStudent = async () => {
 
   try {
     await studentStore.createStudent(schoolId.value, {
-      ...newStudent.value,
+      student_number: newStudent.value.student_id,
+      name: newStudent.value.name,
       grade: parseInt(newStudent.value.grade),
+      class_name: newStudent.value.class_name,
       seat_number: parseInt(newStudent.value.seat_number),
+      id_number: newStudent.value.id_number,
       class_number: 1 // 這裡可能需要根據班級名稱計算
     })
     
@@ -457,31 +724,80 @@ const addStudent = async () => {
   }
 }
 
-const editStudent = (student: Student) => {
-  // 這裡可以開啟編輯對話框
-  console.log('編輯學生:', student)
-}
-
 const viewStudentDetail = (student: Student) => {
-  // 這裡可以開啟學生詳情頁面
-  console.log('查看學生詳情:', student)
+  selectedStudent.value = student
+  showViewStudentModal.value = true
 }
 
-const deleteStudent = async (studentId: number) => {
-  if (!confirm('確定要刪除此學生嗎？')) return
+const editStudentDetail = (student: Student) => {
+  selectedStudent.value = student
+  console.log('編輯學生:', student)
+  // 複製學生資料到編輯表單
+  editStudent.value = {
+    student_id: student.student_number || (student as any).student_id || '',
+    name: student.name,
+    grade: student.grade.toString(),
+    class_name: student.class_name,
+    seat_number: student.seat_number.toString(),
+    id_number: student.id_number
+  }
+  showEditStudentModal.value = true
+}
+
+const updateStudent = async () => {
+  if (!schoolId.value || !selectedStudent.value) return
 
   try {
-    await studentStore.deleteStudent(studentId)
+    const studentId = selectedStudent.value.id
+    console.log('更新學生 ID:', studentId, '類型:', typeof studentId)
+    
+    await studentStore.updateStudent(schoolId.value, studentId, {
+      student_number: editStudent.value.student_id,
+      name: editStudent.value.name,
+      grade: parseInt(editStudent.value.grade),
+      class_name: editStudent.value.class_name,
+      seat_number: parseInt(editStudent.value.seat_number),
+      id_number: editStudent.value.id_number,
+      class_number: 1 // 這裡可能需要根據班級名稱計算
+    })
+    
+    showEditStudentModal.value = false
+    resetEditStudentForm()
     await refreshData()
-    alert('學生刪除成功')
+    alert('學生資料更新成功')
+  } catch (error) {
+    console.error('更新學生資料失敗:', error)
+    alert('更新失敗，請稍後再試')
+  }
+}
+
+const deleteStudent = async (studentId: number, studentName: string) => {
+  if (!confirm(`確定要刪除學生「${studentName}」嗎？\n\n此操作無法復原，學生的所有相關資料都將被刪除。`)) return
+
+  try {
+    await studentStore.deleteStudent(schoolId.value, studentId)
+    await refreshData()
+    alert(`學生「${studentName}」已成功刪除`)
   } catch (error) {
     console.error('刪除學生失敗:', error)
-    alert('刪除失敗，請稍後再試')
+    const errorMessage = error instanceof Error ? error.message : '未知錯誤'
+    alert(`刪除失敗：${errorMessage}\n\n請稍後再試，或聯絡系統管理員`)
   }
 }
 
 const resetNewStudentForm = () => {
   newStudent.value = {
+    student_id: '',
+    name: '',
+    grade: '',
+    class_name: '',
+    seat_number: '',
+    id_number: ''
+  }
+}
+
+const resetEditStudentForm = () => {
+  editStudent.value = {
     student_id: '',
     name: '',
     grade: '',
