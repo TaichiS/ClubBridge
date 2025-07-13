@@ -1,17 +1,10 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="flex">
-      <nav class="w-64 bg-white shadow-sm">
-        <div class="p-4">
-          <h2 class="text-lg font-semibold">SchoolLayout</h2>
-        </div>
-      </nav>
-      <main class="flex-1">
-        <router-view />
-      </main>
-    </div>
+    <!-- 學校層級的簡單容器，不含側邊欄 -->
+    <router-view />
   </div>
 </template>
 <script setup lang="ts">
-// SchoolLayout 邏輯
+// SchoolLayout：學校層級的基礎容器
+// 不包含導航欄，讓子路由決定具體的佈局（如 SchoolAdminLayout）
 </script>
