@@ -34,14 +34,14 @@
             v-model="searchQuery"
             type="text"
             placeholder="學號、姓名或身分證字號"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
           />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">年級</label>
           <select
             v-model="selectedGrade"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
           >
             <option value="">全部年級</option>
             <option value="1">國一</option>
@@ -56,7 +56,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">班級</label>
           <select
             v-model="selectedClass"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
           >
             <option value="">全部班級</option>
             <option v-for="cls in availableClasses" :key="cls" :value="cls">
@@ -68,7 +68,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">狀態</label>
           <select
             v-model="selectedStatus"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
           >
             <option value="">全部狀態</option>
             <option value="active">正常</option>
@@ -218,14 +218,14 @@
             <button
               @click="currentPage--"
               :disabled="currentPage <= 1"
-              class="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
+              class="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50 text-gray-800"
             >
               上一頁
             </button>
             <button
               @click="currentPage++"
               :disabled="currentPage >= totalPages"
-              class="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
+              class="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50 text-gray-800"
             >
               下一頁
             </button>
@@ -245,7 +245,7 @@
               <input
                 v-model="newStudent.student_id"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                 required
               />
             </div>
@@ -254,7 +254,7 @@
               <input
                 v-model="newStudent.name"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                 required
               />
             </div>
@@ -263,7 +263,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">年級</label>
                 <select
                   v-model="newStudent.grade"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                   required
                 >
                   <option value="">選擇年級</option>
@@ -281,7 +281,7 @@
                   v-model="newStudent.class_name"
                   type="text"
                   placeholder="例: 忠"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                   required
                 />
               </div>
@@ -291,7 +291,7 @@
               <input
                 v-model="newStudent.seat_number"
                 type="number"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                 required
               />
             </div>
@@ -300,7 +300,7 @@
               <input
                 v-model="newStudent.id_number"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                 required
               />
             </div>
