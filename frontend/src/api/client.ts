@@ -127,6 +127,10 @@ class ApiClient {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
           onProgress(progress)
         }
+      },
+      // 對於匯入功能，422 狀態碼仍包含有用資料，不應拋出錯誤
+      validateStatus: (status) => {
+        return (status >= 200 && status < 300) || status === 422
       }
     }
 

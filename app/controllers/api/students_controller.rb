@@ -43,23 +43,73 @@ class Api::StudentsController < ApplicationController
 
   def import
     file = params[:file]
-    # TODO: Add file validation
+    
+    return render json: { error: "請選擇檔案" }, status: :bad_request unless file
+    
+    imported_count = 0
+    errors = []
+    
+    begin
+      spreadsheet = Roo::Spreadsheet.open(file.path)
+      header = spreadsheet.row(1).map { |h| COLUMN_MAPPING[h] || h }
+      total_rows = spreadsheet.last_row - 1 # 扣除標題行
 
-    spreadsheet = Roo::Spreadsheet.open(file.path)
-    header = spreadsheet.row(1).map { |h| COLUMN_MAPPING[h] || h }
-
-    (2..spreadsheet.last_row).each do |i|
-      row_data = Hash[[header, spreadsheet.row(i)].transpose]
-      student = Student.new(row_data)
-      unless student.save
-        # Log error or handle it
-        Rails.logger.error "Failed to import student: #{student.errors.full_messages.join(', ')}"
-        # Optionally, collect errors and return them
+      (2..spreadsheet.last_row).each do |i|
+        row_data = Hash[[header, spreadsheet.row(i)].transpose]
+        
+        # 處理學號格式：確保學號是字串格式（移除 .0）
+        if row_data["student_id"].present?
+          if row_data["student_id"].is_a?(Numeric)
+            row_data["student_id"] = row_data["student_id"].to_i.to_s
+          else
+            student_id_str = row_data["student_id"].to_s.strip
+            # 如果是類似 "105001.0" 的字串，轉換為整數再轉回字串
+            if student_id_str.match?(/^\d+\.0+$/)
+              row_data["student_id"] = student_id_str.to_f.to_i.to_s
+            else
+              row_data["student_id"] = student_id_str
+            end
+          end
+        end
+        
+        # 處理其他數值欄位
+        %w[grade class_number seat_number condition1 condition2].each do |field|
+          if row_data[field].present? && row_data[field].is_a?(Numeric)
+            row_data[field] = row_data[field].to_i
+          end
+        end
+        
+        # 處理字串欄位，移除前後空白
+        %w[name class_name id_card_number condition3].each do |field|
+          if row_data[field].present?
+            row_data[field] = row_data[field].to_s.strip
+          end
+        end
+        
+        student = Student.new(row_data)
+        
+        if student.save
+          imported_count += 1
+        else
+          error_msg = "第 #{i} 行: #{student.errors.full_messages.join(', ')}"
+          errors << error_msg
+          Rails.logger.error "Failed to import student at row #{i}: #{error_msg}"
+        end
       end
+      
+      render json: {
+        imported: imported_count,
+        errors: errors,
+        preview: []
+      }, status: :ok
+      
+    rescue => e
+      Rails.logger.error "Import failed: #{e.message}"
+      render json: { 
+        imported: 0,
+        errors: ["檔案處理失敗: #{e.message}"]
+      }, status: :unprocessable_entity
     end
-    render json: { message: "Import finished" }, status: :ok
-  rescue => e
-    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   private
