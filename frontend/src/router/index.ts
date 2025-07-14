@@ -160,13 +160,19 @@ const router = createRouter({
             {
               path: '',
               name: 'student-dashboard',
-              component: () => import('@/pages/student/DashboardPage.vue'),
-              meta: { role: 'student' }
+              component: () => import('@/student/pages/SchoolHomePage.vue'),
+              meta: { requiresAuth: false }
             },
             {
               path: 'clubs',
               name: 'student-clubs',
               component: () => import('@/pages/student/ClubsPage.vue'),
+              meta: { requiresAuth: false }
+            },
+            {
+              path: 'selection',
+              name: 'student-selection',
+              component: () => import('@/student/pages/SelectionPage.vue'),
               meta: { role: 'student' }
             },
             {

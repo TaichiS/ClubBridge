@@ -1,12 +1,12 @@
 <template>
   <div class="p-8">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">社團選擇</h1>
+      <h1 class="text-3xl font-bold text-gray-900">社團瀏覽</h1>
       <div class="flex space-x-4">
         <button
           @click="refreshData"
           :disabled="isLoading"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
         >
           {{ isLoading ? '載入中...' : '重新整理' }}
         </button>
@@ -102,7 +102,7 @@
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">已滿社團</p>
+            <p class="text-sm font-medium text-gray-600">熱門社團</p>
             <p class="text-2xl font-bold text-gray-900">{{ fullClubs.length }}</p>
           </div>
         </div>
@@ -145,7 +145,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="club in paginatedClubs" :key="club.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ club.code }}
+                {{ club.club_number }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ club.name }}
@@ -154,7 +154,7 @@
                 {{ club.category }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ club.instructor }}
+                {{ club.teacher_name }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ (club.current_members || 0) }}/{{ club.max_members }}
@@ -175,19 +175,7 @@
                   @click="viewClubDetail(club)"
                   class="text-blue-600 hover:text-blue-900 mr-3"
                 >
-                  查看
-                </button>
-                <button
-                  @click="editClubDetail(club)"
-                  class="text-green-600 hover:text-green-900 mr-3"
-                >
-                  編輯
-                </button>
-                <button
-                  @click="deleteClub(club.id, club.name)"
-                  class="text-red-600 hover:text-red-900"
-                >
-                  刪除
+                  查看詳情
                 </button>
               </td>
             </tr>
@@ -327,7 +315,7 @@
                 </div>
                 <div>
                   <h3 class="text-xl font-bold text-white">{{ selectedClub.name }}</h3>
-                  <p class="text-blue-100 text-sm">編號：{{ selectedClub.code }}</p>
+                  <p class="text-blue-100 text-sm">編號：{{ selectedClub.club_number }}</p>
                 </div>
               </div>
               <button
@@ -369,7 +357,7 @@
                     </div>
                     <div>
                       <p class="text-sm text-gray-600">指導老師</p>
-                      <p class="font-medium text-gray-900">{{ selectedClub.instructor }}</p>
+                      <p class="font-medium text-gray-900">{{ selectedClub.teacher_name }}</p>
                     </div>
                   </div>
                   
@@ -386,7 +374,7 @@
                     </div>
                   </div>
                   
-                  <div v-if="selectedClub.rainy_location" class="flex items-center space-x-3 mt-3">
+                  <div v-if="selectedClub.rainy_day_location" class="flex items-center space-x-3 mt-3">
                     <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                       <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.29 1.51 4.04 3 5.5l7 7z" />
@@ -394,7 +382,7 @@
                     </div>
                     <div>
                       <p class="text-sm text-gray-600">雨天地點</p>
-                      <p class="font-medium text-gray-900">{{ selectedClub.rainy_location }}</p>
+                      <p class="font-medium text-gray-900">{{ selectedClub.rainy_day_location }}</p>
                     </div>
                   </div>
                 </div>
@@ -464,10 +452,10 @@
             </div>
             
             <!-- 備註 -->
-            <div v-if="selectedClub.notes" class="mt-6">
+            <div v-if="selectedClub.note" class="mt-6">
               <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">備註</h4>
               <div class="bg-gray-50 rounded-lg p-4">
-                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ selectedClub.notes }}</p>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ selectedClub.note }}</p>
               </div>
             </div>
           </div>
@@ -480,12 +468,6 @@
                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               >
                 關閉
-              </button>
-              <button
-                @click="editClubDetail(selectedClub); showViewClubModal = false"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                編輯社團
               </button>
             </div>
           </div>
@@ -660,7 +642,7 @@ const filteredClubs = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(club => 
       club.name.toLowerCase().includes(query) ||
-      club.instructor.toLowerCase().includes(query) ||
+      club.teacher_name.toLowerCase().includes(query) ||
       club.description.toLowerCase().includes(query)
     )
   }
@@ -672,12 +654,12 @@ const filteredClubs = computed(() => {
 
   // 條件一篩選
   if (selectedCondition1.value) {
-    filtered = filtered.filter(club => club.condition_1 === parseInt(selectedCondition1.value))
+    filtered = filtered.filter(club => club.condition1 === parseInt(selectedCondition1.value))
   }
 
   // 條件二篩選
   if (selectedCondition2.value) {
-    filtered = filtered.filter(club => club.condition_2 === parseInt(selectedCondition2.value))
+    filtered = filtered.filter(club => club.condition2 === parseInt(selectedCondition2.value))
   }
 
   return filtered
