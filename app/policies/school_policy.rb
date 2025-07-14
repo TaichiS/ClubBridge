@@ -1,4 +1,14 @@
 class SchoolPolicy < ApplicationPolicy
+  def index?
+    # 只有超級管理員可以列出所有學校
+    user.super_admin?
+  end
+
+  def pending?
+    # 只有超級管理員可以檢視待審核列表
+    user.super_admin?
+  end
+
   def show?
     # 超級管理員可以查看所有學校
     return true if user.super_admin?

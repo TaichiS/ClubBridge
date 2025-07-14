@@ -19,6 +19,10 @@ Rails.application.routes.draw do
     get 'auth/me', to: 'auth#me'
     get 'auth/validate', to: 'auth#validate'
 
+    namespace :public do
+      resources :schools, only: [:show]
+    end
+
     namespace :admin do
       resources :schools, only: [:index, :show, :update] do
         collection do

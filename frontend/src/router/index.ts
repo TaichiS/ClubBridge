@@ -58,14 +58,19 @@ const router = createRouter({
     {
       path: '/schools/:schoolId',
       component: () => import('@/layouts/SchoolLayout.vue'),
-      meta: { requiresAuth: true },
       children: [
+        {
+          path: '',
+          name: 'school-home',
+          component: () => import('@/pages/public/SchoolHomePage.vue'),
+          meta: { requiresAuth: false }
+        },
         // 學校管理員路由
         {
           path: 'admin',
           name: 'school-admin',
           component: () => import('@/layouts/SchoolAdminLayout.vue'),
-          meta: { role: 'school_admin' },
+          meta: { requiresAuth: true, role: 'school_admin' },
           children: [
             {
               path: '',
@@ -202,16 +207,6 @@ const router = createRouter({
 // 路由守衛
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-
-  // 只在需要認證或有角色要求的路由顯示調試信息
-  if (to.meta.requiresAuth || to.meta.role) {
-    console.log('Route guard:', { 
-      to: to.path, 
-      userRole: authStore.userRole, 
-      isAuthenticated: authStore.isAuthenticated,
-      toRole: to.meta.role 
-    })
-  }
 
   // 初始化認證狀態（僅第一次）
   if (!authStore.user && authStore.token) {

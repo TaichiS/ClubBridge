@@ -62,8 +62,10 @@ class ApiClient {
 
         // 處理認證失敗
         if (error.response?.status === 401) {
-          authStore.logout()
-          // 可以在這裡添加跳轉到登入頁的邏輯
+          // 避免登出請求本身失敗時造成無限循環
+          if (error.config.url !== '/api/auth/logout') {
+            authStore.logout()
+          }
         }
 
         // 處理伺服器錯誤

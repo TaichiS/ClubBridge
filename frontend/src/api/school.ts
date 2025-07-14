@@ -7,6 +7,11 @@ import type {
 } from '@/types/school'
 
 export const schoolApi = {
+  // 獲取學校公開資訊
+  async getPublicSchool(schoolId: number): Promise<School> {
+    return apiClient.get(`/api/public/schools/${schoolId}`)
+  },
+
   // 申請新學校
   async applySchool(application: SchoolApplication): Promise<School> {
     return apiClient.post('/api/schools/apply', { school: application })

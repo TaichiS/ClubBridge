@@ -31,6 +31,20 @@ export const useSchoolStore = defineStore('school', () => {
     }
   }
 
+  async function fetchPublicSchool(schoolId: number): Promise<void> {
+    isLoading.value = true
+    try {
+      const school = await schoolApi.getPublicSchool(schoolId)
+      current.value = school
+    } catch (error) {
+      console.error('Fetch public school failed:', error)
+      current.value = null
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function fetchSchool(schoolId: number): Promise<void> {
     isLoading.value = true
     try {
@@ -188,6 +202,7 @@ export const useSchoolStore = defineStore('school', () => {
     
     // Actions
     applySchool,
+    fetchPublicSchool,
     fetchSchool,
     updateSchool,
     fetchSettings,
