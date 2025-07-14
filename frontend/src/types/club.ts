@@ -1,18 +1,18 @@
 export interface Club {
   id: number
   category: string
-  code: string
+  club_number: string
   name: string
-  instructor: string
+  teacher_name: string
   description: string
   max_members: number
   location: string
-  rainy_location?: string
-  notes?: string
-  condition_1?: number
-  condition_2?: number
-  condition_3?: string
-  instructor_email?: string
+  rainy_day_location?: string
+  note?: string
+  condition1?: number
+  condition2?: number
+  condition3?: string
+  teacher_email?: string
   school_id: number
   current_members?: number
   created_at: string
@@ -21,25 +21,25 @@ export interface Club {
 
 export interface ClubImportData {
   category: string
-  code: string
+  club_number: string
   name: string
-  instructor: string
+  teacher_name: string
   description: string
   max_members: number
   location: string
-  rainy_location?: string
-  notes?: string
-  condition_1?: number
-  condition_2?: number
-  condition_3?: string
-  instructor_email?: string
+  rainy_day_location?: string
+  note?: string
+  condition1?: number
+  condition2?: number
+  condition3?: string
+  teacher_email?: string
 }
 
 export interface ClubFilter {
   category?: string
   search?: string
-  condition_1?: number
-  condition_2?: number
+  condition1?: number
+  condition2?: number
   has_available_spots?: boolean
 }
 
@@ -78,9 +78,9 @@ export interface Student {
   class_name: string
   seat_number: number
   id_number: string
-  condition_1?: number
-  condition_2?: number
-  condition_3?: string
+  condition1?: number
+  condition2?: number
+  condition3?: string
   school_id: number
   created_at: string
   updated_at: string
