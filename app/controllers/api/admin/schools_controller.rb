@@ -1,39 +1,58 @@
 class Api::Admin::SchoolsController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_school, only: [:show, :update, :approve, :reject]
+
   def index
-    schools = School.all
-    render json: schools
+    authorize School, :index?
+    @schools = policy_scope(School)
+    render json: @schools
   end
 
   def show
-    school = School.find(params[:id])
-    render json: school
+    authorize @school
+    render json: @school
   end
 
-  def pending
-    schools = School.pending
-    render json: schools
-  end
-
-  def approve
-    school = School.find(params[:id])
-    if school.approved!
-      render json: school
+  def update
+    authorize @school
+    if @school.update(school_params)
+      render json: @school
     else
-      render json: school.errors, status: :unprocessable_entity
+      render json: { errors: @school.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
+  def pending
+    authorize School, :pending?
+    @pending_schools = School.pending
+    render json: @pending_schools
+  end
+
+  def approve
+    authorize @school
+    @school.update(status: :approved)
+    # You might want to trigger a notification here
+    render json: { status: 'approved' }
+  end
+
   def reject
-    school = School.find(params[:id])
-    reject_reason = params[:reason]
-    
-    school.update!(
-      status: :rejected,
-      rejection_reason: reject_reason
+    authorize @school
+    @school.update(status: :rejected)
+    # You might want to trigger a notification here
+    render json: { status: 'rejected' }
+  end
+
+  private
+
+  def set_school
+    @school = School.find(params[:id])
+  end
+
+  def school_params
+    params.require(:school).permit(
+      :name, :school_type, :address, :website, :description,
+      :contact_name, :contact_title, :contact_email, :contact_phone,
+      :student_count, :club_count, :expected_start_date, :notes
     )
-    
-    render json: school
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.message }, status: :unprocessable_entity
   end
 end

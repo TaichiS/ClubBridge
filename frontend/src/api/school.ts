@@ -19,7 +19,7 @@ export const schoolApi = {
 
   // 更新學校資訊
   async updateSchool(schoolId: number, data: Partial<School>): Promise<School> {
-    return apiClient.patch(`/api/schools/${schoolId}`, data)
+    return apiClient.patch(`/api/admin/schools/${schoolId}`, { school: data })
   },
 
   // 獲取學校設定

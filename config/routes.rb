@@ -20,7 +20,7 @@ Rails.application.routes.draw do
     get 'auth/validate', to: 'auth#validate'
 
     namespace :admin do
-      resources :schools, only: [:index, :show] do
+      resources :schools, only: [:index, :show, :update] do
         collection do
           get :pending
         end
