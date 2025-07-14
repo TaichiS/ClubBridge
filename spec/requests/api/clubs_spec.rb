@@ -54,6 +54,51 @@ describe 'Clubs API', type: :request do
     end
   end
 
+  path '/api/schools/{school_id}/clubs/{id}' do
+    parameter name: 'school_id', in: :path, type: :string
+    parameter name: 'id', in: :path, type: :string
+
+    let(:existing_club) { Club.create!(name: "Existing Club", school: school, club_number: "C003", category: "Test", teacher_name: "Test Teacher", description: "Test", max_members: 10, location: "Test") }
+
+    patch('Update a club') do
+      tags 'Clubs'
+      consumes 'application/json'
+      produces 'application/json'
+      security [bearer_auth: []]
+      parameter name: :club, in: :body, schema: {
+        type: :object,
+        properties: {
+          club: {
+            type: :object,
+            properties: {
+              name: { type: :string }
+            }
+          }
+        }
+      }
+
+      response(200, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:id) { existing_club.id }
+        let(:club) { { club: { name: 'Updated Club Name' } } }
+        run_test!
+      end
+    end
+
+    delete('Delete a club') do
+      tags 'Clubs'
+      security [bearer_auth: []]
+
+      response(204, 'successful') do
+        let(:Authorization) { "Bearer #{user.api_token}" }
+        let(:school_id) { school.id }
+        let(:id) { existing_club.id }
+        run_test!
+      end
+    end
+  end
+
   path '/api/schools/{school_id}/clubs/import' do
     post('Import clubs from Excel') do
       tags 'Clubs'
