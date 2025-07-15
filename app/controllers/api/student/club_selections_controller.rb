@@ -1,57 +1,30 @@
-class Api::ClubSelectionsController < ApplicationController
-  before_action :find_student, only: [ :create, :update, :destroy ]
-  before_action :check_selection_period, only: [ :create, :update ]
+class Api::Student::ClubSelectionsController < ApplicationController
+  skip_before_action :authenticate_user!
+  skip_before_action :set_tenant
+  around_action :set_tenant_for_student
+  before_action :authenticate_student!
+  before_action :check_selection_period, only: [:create, :update]
 
-  # 取得學生的選社記錄
+  # 取得學生自己的選社記錄
   def index
-    if @current_student
-      # 學生只能查看自己的選社記錄
-      selections = @current_student.club_selections.includes(:club).order(:preference)
-      render json: selections.map { |selection|
-        {
-          id: selection.id,
-          student_id: selection.student_id,
-          student_name: selection.student.name,
-          club_id: selection.club_id,
-          club_name: selection.club.name,
-          preference: selection.preference,
-          created_at: selection.created_at,
-          updated_at: selection.updated_at
-        }
+    selections = @current_student.club_selections.includes(:club).order(:preference)
+    
+    render json: selections.map { |selection|
+      {
+        id: selection.id,
+        student_id: selection.student_id,
+        student_name: selection.student.name,
+        club_id: selection.club_id,
+        club_name: selection.club.name,
+        preference: selection.preference,
+        created_at: selection.created_at,
+        updated_at: selection.updated_at
       }
-    elsif @current_user
-      # 管理員可以查看所有選社記錄
-      student_id = params[:student_id]
-      if student_id.present?
-        student = Student.find(student_id)
-        selections = student.club_selections.includes(:club).order(:preference)
-      else
-        selections = ClubSelection.includes(:student, :club).order(:preference)
-      end
-      
-      render json: selections.map { |selection|
-        {
-          id: selection.id,
-          student_id: selection.student_id,
-          student_name: selection.student.name,
-          club_id: selection.club_id,
-          club_name: selection.club.name,
-          preference: selection.preference,
-          created_at: selection.created_at,
-          updated_at: selection.updated_at
-        }
-      }
-    else
-      return render json: { error: "需要登入才能查看選社記錄" }, status: :unauthorized
-    end
+    }
   end
 
   # 提交志願序
   def create
-    unless @current_student
-      return render json: { error: "需要學生身份才能提交志願" }, status: :unauthorized
-    end
-    
     club_ids = selection_params[:club_choices]
 
     unless club_ids.is_a?(Array)
@@ -88,11 +61,11 @@ class Api::ClubSelectionsController < ApplicationController
     selections = []
     ActiveRecord::Base.transaction do
       # 1. 刪除該學生之前的所有選社記錄
-      @student.club_selections.destroy_all
+      @current_student.club_selections.destroy_all
 
       # 2. 根據提交的順序創建新的選社記錄
       club_ids.each_with_index do |club_id, index|
-        selections << @student.club_selections.create!(
+        selections << @current_student.club_selections.create!(
           club_id: club_id,
           preference: index + 1 # preference starts from 1
         )
@@ -100,7 +73,7 @@ class Api::ClubSelectionsController < ApplicationController
     end
 
     # 記錄提交時間
-    Rails.logger.info "Student #{@student.id} (#{@student.name}) submitted club selections: #{club_ids}"
+    Rails.logger.info "Student #{@current_student.id} (#{@current_student.name}) submitted club selections: #{club_ids}"
 
     render json: {
       message: "志願提交成功",
@@ -121,10 +94,6 @@ class Api::ClubSelectionsController < ApplicationController
 
   # 更新志願序（重新排序）
   def update
-    unless @current_student
-      return render json: { error: "需要學生身份才能更新志願" }, status: :unauthorized
-    end
-    
     club_ids = selection_params[:club_choices]
 
     unless club_ids.is_a?(Array)
@@ -141,11 +110,11 @@ class Api::ClubSelectionsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       # 刪除舊的選社記錄
-      @student.club_selections.destroy_all
+      @current_student.club_selections.destroy_all
 
       # 創建新的選社記錄
       club_ids.each_with_index do |club_id, index|
-        @student.club_selections.create!(
+        @current_student.club_selections.create!(
           club_id: club_id,
           preference: index + 1
         )
@@ -159,19 +128,39 @@ class Api::ClubSelectionsController < ApplicationController
 
   # 刪除志願序
   def destroy
-    unless @current_student
-      return render json: { error: "需要學生身份才能刪除志願" }, status: :unauthorized
-    end
-    
-    @student.club_selections.destroy_all
+    @current_student.club_selections.destroy_all
     render json: { message: "志願已清除" }, status: :ok
   end
 
   private
 
-  # 設定當前學生
-  def find_student
-    @student = @current_student
+  # 設定學生租戶
+  def set_tenant_for_student
+    school = School.find_by(id: params[:school_id])
+    if school
+      ActsAsTenant.with_tenant(school) do
+        yield
+      end
+    else
+      render json: { error: "School not found" }, status: :not_found
+    end
+  end
+
+  # 學生身份驗證
+  def authenticate_student!
+    token = request.headers["Authorization"]&.split(" ")&.last
+    return render json: { error: "No token provided" }, status: :unauthorized unless token
+
+    # 從快取中取得學生資料
+    student_data = Rails.cache.read("student_token_#{token}")
+    if student_data
+      @current_student = Student.find_by(id: student_data[:student_id])
+      @current_school = School.find_by(id: student_data[:school_id])
+    end
+
+    unless @current_student
+      render json: { error: "學生身份驗證失敗" }, status: :unauthorized
+    end
   end
 
   # 檢查選社期間

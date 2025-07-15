@@ -328,7 +328,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { clubApi } from '@/api/club'
 import { schoolApi } from '@/api/school'
-import { studentApi } from '@/api/student'
 import { useAuthStore } from '@/stores/auth'
 import type { ClubCard } from '@/student/types/club'
 import type { StudentInfo, ClubPreference, DragState } from '@/student/types/student'
@@ -561,7 +560,7 @@ const removeFromSelection = (index: number) => {
 }
 
 // 檢查資格
-const checkEligibility = (club: ClubCard): boolean => {
+const checkEligibility = (_club: ClubCard): boolean => {
   // 簡化的資格檢查邏輯
   return true
 }
@@ -594,10 +593,16 @@ const confirmSubmit = async () => {
     }
     
     // 提交到真實 API
-    await clubApi.submitClubSelection(schoolId.value, parseInt(studentInfo.value.id), selections)
+    const response = await clubApi.submitClubSelection(schoolId.value, parseInt(studentInfo.value.id), selections)
     
     playAnimation('submit')
-    alert('志願提交成功！')
+    
+    // 顯示成功訊息
+    if (response && typeof response === 'object' && 'message' in response) {
+      alert(response.message)
+    } else {
+      alert('志願提交成功！')
+    }
     
     // 導航到結果頁面或返回首頁
     goBack()
@@ -630,8 +635,27 @@ const loadData = async () => {
     schoolInfo.value = schoolData
     realClubs.value = clubsData
     
-    // 如果需要，也可以載入更完整的學生資訊
-    // const currentStudentData = await studentApi.getStudent(schoolId.value, authStore.user.id)
+    // 載入學生現有的選社記錄
+    if (authStore.user) {
+      try {
+        const existingSelections = await clubApi.getStudentSelections(schoolId.value)
+        if (existingSelections.length > 0) {
+          // 將現有選社記錄轉換為 ClubPreference 格式
+          selectedClubs.value = existingSelections.map(selection => ({
+            id: `pref-${selection.id}`,
+            clubId: selection.club_id.toString(),
+            clubName: selection.club_name || '未知社團',
+            clubCategory: selection.club?.category || '未知',
+            clubImage: `/images/club-${selection.club_id}.jpg`,
+            priority: selection.preference,
+            isEligible: true,
+            eligibilityReason: undefined
+          })).sort((a, b) => a.priority - b.priority)
+        }
+      } catch (error) {
+        console.warn('無法載入現有選社記錄:', error)
+      }
+    }
     
   } catch (err) {
     console.error('載入資料失敗:', err)

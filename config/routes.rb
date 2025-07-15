@@ -19,6 +19,13 @@ Rails.application.routes.draw do
     get 'auth/me', to: 'auth#me'
     get 'auth/validate', to: 'auth#validate'
 
+    # 學生專用路由
+    namespace :student do
+      scope 'schools/:school_id' do
+        resources :club_selections, only: [:index, :create, :update, :destroy]
+      end
+    end
+
     namespace :public do
       resources :schools, only: [:show] do
         resources :clubs, only: [:index] do
@@ -66,7 +73,7 @@ Rails.application.routes.draw do
           get :hotness_report
         end
       end
-      resources :club_selections, only: [:create]
+      resources :club_selections, only: [:index, :create, :update, :destroy]
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
       get :statistics, to: 'statistics#show'
       

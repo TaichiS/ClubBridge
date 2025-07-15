@@ -55,10 +55,13 @@ export interface ClubStatistics {
 export interface ClubSelection {
   id: number
   student_id: number
+  student_name?: string
   club_id: number
-  priority: number
-  status: 'pending' | 'assigned' | 'rejected'
-  school_id: number
+  club_name?: string
+  preference: number
+  priority?: number
+  status?: 'pending' | 'assigned' | 'rejected'
+  school_id?: number
   created_at: string
   updated_at: string
   student?: Student

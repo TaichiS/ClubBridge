@@ -93,23 +93,18 @@ export const clubApi = {
   // 社團選擇相關 API
   
   // 提交學生選社志願
-  async submitClubSelection(schoolId: number, studentId: number, selections: ClubSelectionRequest): Promise<ClubSelection[]> {
-    return apiClient.post(`/api/schools/${schoolId}/club-selections`, {
-      student_id: studentId,
-      ...selections
-    })
+  async submitClubSelection(schoolId: number, _studentId: number, selections: ClubSelectionRequest): Promise<any> {
+    return apiClient.post(`/api/student/schools/${schoolId}/club_selections`, selections)
   },
 
   // 獲取學生的選社記錄
-  async getStudentSelections(schoolId: number, studentId: number): Promise<ClubSelection[]> {
-    return apiClient.get(`/api/schools/${schoolId}/club-selections`, {
-      params: { student_id: studentId }
-    })
+  async getStudentSelections(schoolId: number, _studentId?: number): Promise<ClubSelection[]> {
+    return apiClient.get(`/api/student/schools/${schoolId}/club_selections`)
   },
 
   // 獲取所有選社記錄（管理員用）
   async getAllSelections(schoolId: number): Promise<ClubSelection[]> {
-    return apiClient.get(`/api/schools/${schoolId}/club-selections`)
+    return apiClient.get(`/api/schools/${schoolId}/club_selections`)
   },
 
   // 啟動社團分發
