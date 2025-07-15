@@ -71,6 +71,32 @@ export const useSchoolStore = defineStore('school', () => {
     }
   }
 
+  async function fetchSchoolForAdmin(schoolId: number): Promise<void> {
+    isLoading.value = true
+    try {
+      const school = await schoolApi.getSchoolForAdmin(schoolId)
+      current.value = school
+    } catch (error) {
+      console.error('Fetch school for admin failed:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function updateSchoolForAdmin(schoolId: number, data: Partial<School>): Promise<void> {
+    isLoading.value = true
+    try {
+      const school = await schoolApi.updateSchoolForAdmin(schoolId, data)
+      current.value = school
+    } catch (error) {
+      console.error('Update school for admin failed:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function fetchSettings(schoolId: number): Promise<void> {
     try {
       const schoolSettings = await schoolApi.getSchoolSettings(schoolId)
@@ -205,6 +231,8 @@ export const useSchoolStore = defineStore('school', () => {
     fetchPublicSchool,
     fetchSchool,
     updateSchool,
+    fetchSchoolForAdmin,
+    updateSchoolForAdmin,
     fetchSettings,
     updateSettings,
     createSettings,

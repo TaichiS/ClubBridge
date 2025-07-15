@@ -17,6 +17,13 @@ export interface School {
   applicant_email?: string
   rejection_reason?: string
   status: 'pending' | 'approved' | 'rejected'
+  club_selection_start_time?: string
+  club_selection_end_time?: string
+  result_announcement_start_time?: string
+  result_announcement_end_time?: string
+  semester_schedule?: string
+  announcement?: string
+  top_announcement?: string
   created_at: string
   updated_at: string
 }

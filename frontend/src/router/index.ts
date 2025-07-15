@@ -111,6 +111,16 @@ const router = createRouter({
               path: 'assignments',
               name: 'school-admin-assignments',
               component: () => import('@/pages/school-admin/AssignmentsPage.vue')
+            },
+            {
+              path: 'semester-setup',
+              name: 'school-admin-semester-setup',
+              component: () => import('@/pages/school-admin/SemesterSetupPage.vue')
+            },
+            {
+              path: 'announcement',
+              name: 'school-admin-announcement',
+              component: () => import('@/pages/school-admin/AnnouncementPage.vue')
             }
           ]
         },

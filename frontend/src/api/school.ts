@@ -27,6 +27,16 @@ export const schoolApi = {
     return apiClient.patch(`/api/admin/schools/${schoolId}`, { school: data })
   },
 
+  // 學校管理員專用 - 獲取學校資訊
+  async getSchoolForAdmin(schoolId: number): Promise<School> {
+    return apiClient.get(`/api/schools/${schoolId}/admin/school`)
+  },
+
+  // 學校管理員專用 - 更新學校資訊
+  async updateSchoolForAdmin(schoolId: number, data: Partial<School>): Promise<School> {
+    return apiClient.patch(`/api/schools/${schoolId}/admin/school`, { school: data })
+  },
+
   // 獲取學校設定
   async getSchoolSettings(schoolId: number): Promise<SchoolSetting> {
     return apiClient.get(`/api/schools/${schoolId}/setting`)

@@ -63,6 +63,10 @@ Rails.application.routes.draw do
       resources :club_selections, only: [:create]
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
       get :statistics, to: 'statistics#show'
+      
+      namespace :admin do
+        resource :school, only: [:show, :update], controller: 'schools'
+      end
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_12_073111) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_15_053358) do
   create_table "club_selections", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "club_id", null: false
@@ -87,6 +87,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_073111) do
     t.string "applicant_name"
     t.string "applicant_email"
     t.text "rejection_reason"
+    t.text "announcement"
+    t.text "top_announcement"
+    t.datetime "club_selection_start_time"
+    t.datetime "club_selection_end_time"
+    t.datetime "result_announcement_start_time"
+    t.datetime "result_announcement_end_time"
+    t.text "semester_schedule"
   end
 
   create_table "students", force: :cascade do |t|

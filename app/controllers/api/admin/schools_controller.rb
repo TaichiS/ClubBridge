@@ -52,7 +52,10 @@ class Api::Admin::SchoolsController < ApplicationController
     params.require(:school).permit(
       :name, :school_type, :address, :website, :description,
       :contact_name, :contact_title, :contact_email, :contact_phone,
-      :student_count, :club_count, :expected_start_date, :notes
+      :student_count, :club_count, :expected_start_date, :notes,
+      :club_selection_start_time, :club_selection_end_time,
+      :result_announcement_start_time, :result_announcement_end_time,
+      :semester_schedule, :announcement, :top_announcement
     )
   end
 end
