@@ -10,7 +10,7 @@
               <span class="text-white font-bold text-lg">🏫</span>
             </div>
             <div>
-              <h1 class="text-xl font-bold text-gray-900">{{ schoolInfo.name }}</h1>
+              <h1 class="text-xl font-bold text-gray-900">{{ schoolInfo?.name || '載入中...' }}</h1>
               <p class="text-xs text-gray-500">學生選社系統</p>
             </div>
           </div>
@@ -42,17 +42,38 @@
 
     <!-- 主要內容 -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- 載入狀態 -->
+      <div v-if="isLoading" class="text-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">載入學校資訊中...</p>
+      </div>
+      
+      <!-- 錯誤狀態 -->
+      <div v-else-if="error" class="text-center py-20">
+        <div class="text-red-500 text-6xl mb-4">⚠️</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">載入失敗</h2>
+        <p class="text-gray-600 mb-6">{{ error }}</p>
+        <button 
+          @click="window.location.reload()" 
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          重新載入
+        </button>
+      </div>
+      
+      <!-- 正常內容 -->
+      <template v-else-if="schoolInfo">
       <!-- 英雄區域 -->
       <section class="text-center mb-16">
         <div class="animate-fade-in">
           <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
             歡迎來到 
             <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {{ schoolInfo.name }}
+              {{ schoolInfo?.name || '載入中...' }}
             </span>
           </h2>
           <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            {{ schoolInfo.description }}
+            {{ schoolInfo?.description || '載入學校資訊中...' }}
           </p>
           
           <!-- 選社時程卡片 -->
@@ -100,11 +121,11 @@
             <div class="mt-6 flex justify-center">
               <div :class="[
                 'px-4 py-2 rounded-full text-sm font-medium',
-                schedule.isRegistrationOpen 
+                schedule?.isRegistrationOpen 
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-gray-100 text-gray-600'
               ]">
-                {{ schedule.isRegistrationOpen ? '🟢 選社進行中' : '⏳ 尚未開始' }}
+                {{ schedule?.isRegistrationOpen ? '🟢 選社進行中' : '⏳ 尚未開始' }}
               </div>
             </div>
           </div>
@@ -188,20 +209,21 @@
                     置頂
                   </span>
                 </div>
-                <p class="text-gray-600 mb-2">{{ announcement.content }}</p>
+                <div class="text-gray-600 mb-2 prose prose-sm max-w-none" v-html="renderMarkdown(announcement.content)"></div>
                 <p class="text-sm text-gray-500">{{ formatDate(announcement.createdAt) }}</p>
               </div>
             </div>
           </div>
         </div>
       </section>
+      </template>
     </main>
 
     <!-- 底部 -->
     <footer class="bg-gray-50 border-t border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="text-center text-gray-600">
-          <p>&copy; 2024 {{ schoolInfo.name }} 學生選社系統</p>
+          <p>&copy; 2024 {{ schoolInfo?.name || '學校' }} 學生選社系統</p>
           <p class="text-sm mt-2">Powered by ClubBridge</p>
         </div>
       </div>
@@ -211,62 +233,65 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { SchoolPublicInfo, Announcement, SelectionSchedule } from '@/student/types/school'
+import { useRoute } from 'vue-router'
+import { schoolApi } from '@/api/school'
+import { useMarkdown } from '@/composables/useMarkdown'
+import type { School } from '@/types/school'
 
-// 模擬數據
-const schoolInfo = ref<SchoolPublicInfo>({
-  id: 'school-abc',
-  name: '文華高中',
-  logo: '/images/school-logo.png',
-  description: '歡迎來到文華高中學生選社系統，在這裡你可以找到最適合自己的社團，開啟豐富多彩的校園生活！',
-  announcements: [],
-  selectionSchedule: {
-    registrationStart: new Date('2024-09-01'),
-    registrationEnd: new Date('2024-09-15'),
-    assignmentDate: new Date('2024-09-20'),
-    resultAnnouncement: new Date('2024-09-25'),
-    isRegistrationOpen: true
-  },
-  clubStats: {
-    totalClubs: 48,
-    availableClubs: 42,
-    totalCapacity: 1200,
-    currentRegistrations: 856,
-    categories: []
-  },
-  theme: {
-    primaryColor: '#3B82F6',
-    secondaryColor: '#8B5CF6',
-    accentColor: '#10B981',
-    logoUrl: '/images/school-logo.png'
-  }
+const route = useRoute()
+const { renderMarkdown } = useMarkdown()
+
+// 真實資料
+const schoolInfo = ref<School | null>(null)
+const isLoading = ref(true)
+const error = ref<string | null>(null)
+
+// 從路由取得學校ID
+const schoolId = computed(() => {
+  return Number(route.params.schoolId)
 })
 
-const schedule = computed(() => schoolInfo.value.selectionSchedule)
+const schedule = computed(() => {
+  if (!schoolInfo.value) return null
+  
+  const now = new Date()
+  const startTime = schoolInfo.value.club_selection_start_time ? new Date(schoolInfo.value.club_selection_start_time) : null
+  const endTime = schoolInfo.value.club_selection_end_time ? new Date(schoolInfo.value.club_selection_end_time) : null
+  const resultStartTime = schoolInfo.value.result_announcement_start_time ? new Date(schoolInfo.value.result_announcement_start_time) : null
+  const resultEndTime = schoolInfo.value.result_announcement_end_time ? new Date(schoolInfo.value.result_announcement_end_time) : null
+  
+  return {
+    registrationStart: startTime,
+    registrationEnd: endTime,
+    resultAnnouncement: resultStartTime,
+    resultAnnouncementEnd: resultEndTime,
+    isRegistrationOpen: startTime && endTime && now >= startTime && now <= endTime
+  }
+})
 
 const stats = computed(() => [
   {
     label: '社團總數',
-    value: schoolInfo.value.clubStats.totalClubs,
+    value: schoolInfo.value?.club_count || '0',
     icon: '🎭',
     color: 'bg-gradient-to-r from-blue-500 to-purple-600'
   },
   {
-    label: '開放社團',
-    value: schoolInfo.value.clubStats.availableClubs,
-    icon: '✨',
+    label: '學生總數',
+    value: schoolInfo.value?.student_count || '0',
+    icon: '👥',
     color: 'bg-gradient-to-r from-green-500 to-blue-500'
   },
   {
-    label: '總容量',
-    value: schoolInfo.value.clubStats.totalCapacity,
-    icon: '👥',
+    label: '最少志願數',
+    value: schoolInfo.value?.min_required_choices || '3',
+    icon: '📝',
     color: 'bg-gradient-to-r from-purple-500 to-pink-500'
   },
   {
-    label: '目前選社',
-    value: schoolInfo.value.clubStats.currentRegistrations,
-    icon: '📊',
+    label: '學校類型',
+    value: getSchoolTypeText(schoolInfo.value?.school_type),
+    icon: '🏫',
     color: 'bg-gradient-to-r from-orange-500 to-red-500'
   }
 ])
@@ -282,34 +307,53 @@ const categories = ref([
   { name: '其他', count: 3, icon: '🌟', color: 'bg-gradient-to-r from-yellow-500 to-orange-500' }
 ])
 
-const announcements = ref<Announcement[]>([
-  {
-    id: '1',
-    title: '選社系統上線公告',
-    content: '親愛的同學們，新學年的選社系統已經正式上線！請在規定時間內完成社團選擇。',
-    createdAt: new Date('2024-08-25'),
-    priority: 'high',
-    isSticky: true
-  },
-  {
-    id: '2',
-    title: '社團博覽會活動通知',
-    content: '9月3日至9月5日將舉行社團博覽會，歡迎同學們踴躍參加了解各社團活動內容。',
-    createdAt: new Date('2024-08-20'),
-    priority: 'medium',
-    isSticky: false
-  },
-  {
-    id: '3',
-    title: '選社注意事項',
-    content: '請同學們注意：1. 每人最多可填寫5個志願 2. 填寫完畢後請務必按下提交按鈕 3. 如有疑問請洽詢學務處',
-    createdAt: new Date('2024-08-15'),
-    priority: 'medium',
-    isSticky: false
+const announcements = computed(() => {
+  if (!schoolInfo.value) return []
+  
+  const items = []
+  
+  // 置頂公告
+  if (schoolInfo.value.top_announcement) {
+    items.push({
+      id: 'top',
+      title: '置頂公告',
+      content: schoolInfo.value.top_announcement,
+      createdAt: new Date(),
+      priority: 'high' as const,
+      isSticky: true
+    })
   }
-])
+  
+  // 一般公告
+  if (schoolInfo.value.announcement) {
+    items.push({
+      id: 'general',
+      title: '一般公告',
+      content: schoolInfo.value.announcement,
+      createdAt: new Date(),
+      priority: 'medium' as const,
+      isSticky: false
+    })
+  }
+  
+  // 學期課程資訊
+  if (schoolInfo.value.semester_schedule) {
+    items.push({
+      id: 'schedule',
+      title: '本學期上課時間',
+      content: schoolInfo.value.semester_schedule,
+      createdAt: new Date(),
+      priority: 'medium' as const,
+      isSticky: false
+    })
+  }
+  
+  return items
+})
 
 const progressWidth = computed(() => {
+  if (!schedule.value?.registrationStart || !schedule.value?.resultAnnouncement) return '0%'
+  
   const now = new Date()
   const start = schedule.value.registrationStart
   const end = schedule.value.resultAnnouncement
@@ -321,35 +365,55 @@ const progressWidth = computed(() => {
   return `${Math.min(progress, 100)}%`
 })
 
-const formatDate = (date: Date) => {
+const formatDate = (date: Date | null) => {
+  if (!date) return '未設定'
   return date.toLocaleDateString('zh-TW', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 
+const getSchoolTypeText = (type: string | undefined) => {
+  switch (type) {
+    case 'elementary': return '國小'
+    case 'junior_high': return '國中'
+    case 'senior_high': return '高中'
+    case 'vocational': return '高職'
+    case 'university': return '大學'
+    default: return '學校'
+  }
+}
+
 const navigateToClubs = () => {
-  // 導航到社團列表
-  window.location.href = '/schools/1/student/clubs'
+  window.location.href = `/schools/${schoolId.value}/student/clubs`
 }
 
 const navigateToLogin = () => {
-  // 導航到登入頁面
-  window.location.href = '/schools/1/student/login'
+  window.location.href = `/schools/${schoolId.value}/student/login`
 }
 
 const navigateToSelection = () => {
-  // 導航到選社頁面
-  window.location.href = '/schools/1/student/selection'
+  window.location.href = `/schools/${schoolId.value}/student/selection`
 }
 
 const navigateToClubsByCategory = (category: string) => {
-  // 導航到特定分類的社團列表
-  window.location.href = `/schools/1/student/clubs?category=${encodeURIComponent(category)}`
+  window.location.href = `/schools/${schoolId.value}/student/clubs?category=${encodeURIComponent(category)}`
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 載入學校資料
+  try {
+    schoolInfo.value = await schoolApi.getPublicSchool(schoolId.value)
+  } catch (err) {
+    console.error('載入學校資料失敗:', err)
+    error.value = '載入學校資料失敗'
+  } finally {
+    isLoading.value = false
+  }
+  
   // 添加動畫效果
   const observerOptions = {
     threshold: 0.1,
