@@ -169,7 +169,7 @@
                   </div>
                   
                   <!-- 已選擇指示器 -->
-                  <div v-if="isClubSelected(club.id)" class="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                  <div v-if="isClubSelected(club.id)" class="absolute top-2 right-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -257,7 +257,7 @@
 
                   <div class="pr-8">
                     <h4 class="font-semibold text-gray-900 mb-1">{{ club.clubName }}</h4>
-                    <p class="text-sm text-gray-600 mb-2">{{ club.clubCategory }}</p>
+                    
                     <div class="flex items-center justify-between">
                       <div :class="[
                         'text-xs px-2 py-1 rounded',

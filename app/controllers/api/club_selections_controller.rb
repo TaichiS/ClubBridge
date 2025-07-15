@@ -1,202 +1,35 @@
 class Api::ClubSelectionsController < ApplicationController
-  before_action :find_student, only: [ :create, :update, :destroy ]
-  before_action :check_selection_period, only: [ :create, :update ]
+  # 這個 controller 專門給管理員使用，只提供查看功能
+  # 學生選社功能已移至 Api::Student::ClubSelectionsController
 
-  # 取得學生的選社記錄
+  # 取得選社記錄（管理員專用）
   def index
-    if @current_student
-      # 學生只能查看自己的選社記錄
-      selections = @current_student.club_selections.includes(:club).order(:preference)
-      render json: selections.map { |selection|
-        {
-          id: selection.id,
-          student_id: selection.student_id,
-          student_name: selection.student.name,
-          club_id: selection.club_id,
-          club_name: selection.club.name,
-          preference: selection.preference,
-          created_at: selection.created_at,
-          updated_at: selection.updated_at
-        }
-      }
-    elsif @current_user
-      # 管理員可以查看所有選社記錄
-      student_id = params[:student_id]
-      if student_id.present?
-        student = Student.find(student_id)
-        selections = student.club_selections.includes(:club).order(:preference)
-      else
-        selections = ClubSelection.includes(:student, :club).order(:preference)
-      end
-      
-      render json: selections.map { |selection|
-        {
-          id: selection.id,
-          student_id: selection.student_id,
-          student_name: selection.student.name,
-          club_id: selection.club_id,
-          club_name: selection.club.name,
-          preference: selection.preference,
-          created_at: selection.created_at,
-          updated_at: selection.updated_at
-        }
-      }
+    unless @current_user
+      return render json: { error: "需要管理員身份才能查看選社記錄" }, status: :unauthorized
+    end
+
+    student_id = params[:student_id]
+    if student_id.present?
+      student = Student.find(student_id)
+      selections = student.club_selections.includes(:club).order(:preference)
     else
-      return render json: { error: "需要登入才能查看選社記錄" }, status: :unauthorized
-    end
-  end
-
-  # 提交志願序
-  def create
-    unless @current_student
-      return render json: { error: "需要學生身份才能提交志願" }, status: :unauthorized
-    end
-    
-    club_ids = selection_params[:club_choices]
-
-    unless club_ids.is_a?(Array)
-      return render json: { error: "club_choices must be an array" }, status: :bad_request
+      selections = ClubSelection.includes(:student, :club).order(:preference)
     end
 
-    # 檢查最少志願數
-    min_required = current_tenant.min_required_choices || 3
-    if club_ids.length < min_required
-      return render json: {
-        error: "至少需要選擇 #{min_required} 個志願"
-      }, status: :bad_request
-    end
-
-    # 檢查是否有重複的社團
-    if club_ids.uniq.length != club_ids.length
-      return render json: { error: "不能選擇重複的社團" }, status: :bad_request
-    end
-
-    # 確保所有提交的社團都屬於當前學校
-    valid_clubs = Club.where(id: club_ids)
-    if valid_clubs.count != club_ids.length
-      return render json: { error: "選擇的社團無效或不存在" }, status: :not_found
-    end
-
-    # 檢查社團是否有名額限制
-    invalid_clubs = valid_clubs.select { |club| club.max_members <= (club.current_members || 0) }
-    if invalid_clubs.any?
-      return render json: {
-        error: "以下社團已滿額：#{invalid_clubs.map(&:name).join(', ')}"
-      }, status: :bad_request
-    end
-
-    selections = []
-    ActiveRecord::Base.transaction do
-      # 1. 刪除該學生之前的所有選社記錄
-      @student.club_selections.destroy_all
-
-      # 2. 根據提交的順序創建新的選社記錄
-      club_ids.each_with_index do |club_id, index|
-        selections << @student.club_selections.create!(
-          club_id: club_id,
-          preference: index + 1 # preference starts from 1
-        )
-      end
-    end
-
-    # 記錄提交時間
-    Rails.logger.info "Student #{@student.id} (#{@student.name}) submitted club selections: #{club_ids}"
-
-    render json: {
-      message: "志願提交成功",
-      selections: selections.map { |selection|
-        {
-          id: selection.id,
-          club_id: selection.club_id,
-          club_name: selection.club.name,
-          preference: selection.preference
-        }
+    render json: selections.map { |selection|
+      {
+        id: selection.id,
+        student_id: selection.student_id,
+        student_name: selection.student.name,
+        club_id: selection.club_id,
+        club_name: selection.club.name,
+        preference: selection.preference,
+        created_at: selection.created_at,
+        updated_at: selection.updated_at
       }
-    }, status: :created
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.message }, status: :unprocessable_entity
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "學生不存在" }, status: :not_found
+    }
   end
 
-  # 更新志願序（重新排序）
-  def update
-    unless @current_student
-      return render json: { error: "需要學生身份才能更新志願" }, status: :unauthorized
-    end
-    
-    club_ids = selection_params[:club_choices]
-
-    unless club_ids.is_a?(Array)
-      return render json: { error: "club_choices must be an array" }, status: :bad_request
-    end
-
-    # 檢查最少志願數
-    min_required = current_tenant.min_required_choices || 3
-    if club_ids.length < min_required
-      return render json: {
-        error: "至少需要選擇 #{min_required} 個志願"
-      }, status: :bad_request
-    end
-
-    ActiveRecord::Base.transaction do
-      # 刪除舊的選社記錄
-      @student.club_selections.destroy_all
-
-      # 創建新的選社記錄
-      club_ids.each_with_index do |club_id, index|
-        @student.club_selections.create!(
-          club_id: club_id,
-          preference: index + 1
-        )
-      end
-    end
-
-    render json: { message: "志願更新成功" }, status: :ok
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.message }, status: :unprocessable_entity
-  end
-
-  # 刪除志願序
-  def destroy
-    unless @current_student
-      return render json: { error: "需要學生身份才能刪除志願" }, status: :unauthorized
-    end
-    
-    @student.club_selections.destroy_all
-    render json: { message: "志願已清除" }, status: :ok
-  end
-
-  private
-
-  # 設定當前學生
-  def find_student
-    @student = @current_student
-  end
-
-  # 檢查選社期間
-  def check_selection_period
-    school = current_tenant
-
-    # 如果沒有設定選社時間，允許選社
-    return unless school.club_selection_start_time && school.club_selection_end_time
-
-    now = Time.current
-    start_time = school.club_selection_start_time
-    end_time = school.club_selection_end_time
-
-    if now < start_time
-      render json: {
-        error: "選社尚未開始，開始時間：#{start_time.strftime('%Y-%m-%d %H:%M')}"
-      }, status: :forbidden
-    elsif now > end_time
-      render json: {
-        error: "選社已結束，結束時間：#{end_time.strftime('%Y-%m-%d %H:%M')}"
-      }, status: :forbidden
-    end
-  end
-
-  def selection_params
-    params.permit(:student_id, club_choices: [])
-  end
+  # 其他 CRUD 操作已移至 Api::Student::ClubSelectionsController
+  # 此 controller 專注於管理員查看功能
 end

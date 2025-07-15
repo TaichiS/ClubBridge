@@ -73,7 +73,7 @@ Rails.application.routes.draw do
           get :hotness_report
         end
       end
-      resources :club_selections, only: [:index, :create, :update, :destroy]
+      resources :club_selections, only: [:index]
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
       get :statistics, to: 'statistics#show'
       
