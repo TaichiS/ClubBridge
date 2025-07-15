@@ -2,6 +2,8 @@
 
 class Api::Public::SchoolsController < ApplicationController
   # This controller is for public-facing school information and does not require authentication.
+  skip_before_action :authenticate_user!
+  skip_before_action :set_tenant
 
   def show
     school = School.find(params[:id])

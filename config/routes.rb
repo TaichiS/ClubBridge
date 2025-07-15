@@ -20,7 +20,13 @@ Rails.application.routes.draw do
     get 'auth/validate', to: 'auth#validate'
 
     namespace :public do
-      resources :schools, only: [:show]
+      resources :schools, only: [:show] do
+        resources :clubs, only: [:index] do
+          collection do
+            get :categories
+          end
+        end
+      end
     end
 
     namespace :admin do

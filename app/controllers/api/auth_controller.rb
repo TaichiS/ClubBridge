@@ -47,9 +47,10 @@ class Api::AuthController < ApplicationController
 
   # POST /api/auth/student
   def student_login
-    student_id = params[:student_id]
+    # 支援兩種參數名稱
+    student_number = params[:student_number] || params[:student_id]
     id_number = params[:id_number]
-    school_id = params[:school_id]
+    school_id = params[:school_id] || request.headers['X-School-ID']
     
     school = School.find_by(id: school_id)
     return render json: { error: '學校不存在' }, status: :not_found unless school
@@ -58,7 +59,7 @@ class Api::AuthController < ApplicationController
     set_current_tenant(school)
     
     # 尋找學生
-    student = Student.find_by(student_id: student_id, id_number: id_number)
+    student = Student.find_by(student_id: student_number, id_card_number: id_number)
     return render json: { error: '學號或身分證字號錯誤' }, status: :unauthorized unless student
     
     # 為學生建立臨時登入 token（儲存在 session 或 cache）

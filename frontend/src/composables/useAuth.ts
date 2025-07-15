@@ -127,7 +127,7 @@ export function useAuth() {
         break
       case 'student':
         if (schoolId) {
-          router.push(`/schools/${schoolId}/student`)
+          router.push(`/schools/${schoolId}/student/selection`)
         } else {
           router.push('/')
         }

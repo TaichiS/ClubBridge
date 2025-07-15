@@ -75,5 +75,10 @@ export const schoolApi = {
   // 管理員專用 - 獲取所有學校
   async getAllSchools(): Promise<School[]> {
     return apiClient.get('/api/admin/schools')
+  },
+
+  // 獲取學校的社團類別
+  async getClubCategories(schoolId: number): Promise<any[]> {
+    return apiClient.get(`/api/public/schools/${schoolId}/clubs/categories`)
   }
 }

@@ -41,7 +41,7 @@ export interface LoginCredentials {
   // Google 登入用
   email?: string
   // 學生登入用
-  student_id?: string
+  student_number?: string
   id_number?: string
   school_id?: number
 }

@@ -115,7 +115,8 @@ async function handleLogin() {
   try {
     await loginAsStudent({
       student_number: form.value.student_number?.trim(),
-      id_number: form.value.id_number?.trim().toUpperCase()
+      id_number: form.value.id_number?.trim().toUpperCase(),
+      school_id: parseInt(schoolId.value)
     })
   } catch (err) {
     console.error('Student login failed:', err)

@@ -296,16 +296,7 @@ const stats = computed(() => [
   }
 ])
 
-const categories = ref([
-  { name: '體育類', count: 12, icon: '⚽', color: 'bg-gradient-to-r from-green-500 to-blue-500' },
-  { name: '藝文類', count: 15, icon: '🎨', color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
-  { name: '學術類', count: 8, icon: '🔬', color: 'bg-gradient-to-r from-blue-500 to-purple-600' },
-  { name: '服務類', count: 6, icon: '🤝', color: 'bg-gradient-to-r from-orange-500 to-red-500' },
-  { name: '技能類', count: 7, icon: '💻', color: 'bg-gradient-to-r from-teal-500 to-cyan-500' },
-  { name: '音樂類', count: 9, icon: '🎵', color: 'bg-gradient-to-r from-indigo-500 to-purple-600' },
-  { name: '語言類', count: 4, icon: '🗣️', color: 'bg-gradient-to-r from-pink-500 to-rose-500' },
-  { name: '其他', count: 3, icon: '🌟', color: 'bg-gradient-to-r from-yellow-500 to-orange-500' }
-])
+const categories = ref<any[]>([])
 
 const announcements = computed(() => {
   if (!schoolInfo.value) return []
@@ -406,7 +397,14 @@ const navigateToClubsByCategory = (category: string) => {
 onMounted(async () => {
   // 載入學校資料
   try {
-    schoolInfo.value = await schoolApi.getPublicSchool(schoolId.value)
+    // 同時載入學校資料和社團類別
+    const [schoolData, categoryData] = await Promise.all([
+      schoolApi.getPublicSchool(schoolId.value),
+      schoolApi.getClubCategories(schoolId.value)
+    ])
+    
+    schoolInfo.value = schoolData
+    categories.value = categoryData
   } catch (err) {
     console.error('載入學校資料失敗:', err)
     error.value = '載入學校資料失敗'
