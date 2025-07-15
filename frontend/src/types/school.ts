@@ -24,6 +24,7 @@ export interface School {
   semester_schedule?: string
   announcement?: string
   top_announcement?: string
+  min_required_choices?: number
   created_at: string
   updated_at: string
 }

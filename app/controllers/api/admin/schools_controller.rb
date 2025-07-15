@@ -55,7 +55,8 @@ class Api::Admin::SchoolsController < ApplicationController
       :student_count, :club_count, :expected_start_date, :notes,
       :club_selection_start_time, :club_selection_end_time,
       :result_announcement_start_time, :result_announcement_end_time,
-      :semester_schedule, :announcement, :top_announcement
+      :semester_schedule, :announcement, :top_announcement,
+      :min_required_choices
     )
   end
 end

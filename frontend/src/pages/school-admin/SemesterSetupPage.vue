@@ -102,6 +102,31 @@
           </div>
         </div>
 
+        <!-- 選社規則設定 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t pt-8">
+          <div class="md:col-span-1">
+            <h2 class="text-lg font-semibold text-gray-900">選社規則</h2>
+            <p class="text-sm text-gray-500 mt-1">設定學生選社的基本規則。</p>
+          </div>
+          <div class="md:col-span-2">
+            <div>
+              <label class="form-label">每位學生最少應選志願數 *</label>
+              <input 
+                v-model.number="form.min_required_choices" 
+                type="number" 
+                class="form-input" 
+                min="1"
+                max="20"
+                required
+                placeholder="例如：3"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                設定學生至少必須選擇的志願數量。建議設定為3-5個志願以上。
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- 提交按鈕 -->
         <div class="flex justify-end pt-6 border-t">
           <button type="submit" :disabled="isSubmitting" class="btn-primary">

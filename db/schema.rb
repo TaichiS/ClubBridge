@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_15_053358) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_15_064809) do
   create_table "club_selections", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "club_id", null: false
@@ -94,6 +94,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_053358) do
     t.datetime "result_announcement_start_time"
     t.datetime "result_announcement_end_time"
     t.text "semester_schedule"
+    t.integer "min_required_choices"
   end
 
   create_table "students", force: :cascade do |t|
