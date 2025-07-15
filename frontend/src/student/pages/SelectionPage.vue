@@ -1,7 +1,30 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <!-- 載入狀態 -->
+    <div v-if="isLoading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-8 text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">載入中...</p>
+      </div>
+    </div>
+
+    <!-- 錯誤狀態 -->
+    <div v-else-if="error" class="min-h-screen flex items-center justify-center">
+      <div class="bg-white rounded-lg p-8 text-center shadow-lg">
+        <div class="text-red-500 text-6xl mb-4">❌</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">載入失敗</h2>
+        <p class="text-gray-600 mb-6">{{ error }}</p>
+        <button 
+          @click="loadData()" 
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          重新載入
+        </button>
+      </div>
+    </div>
+
     <!-- 頂部導航 -->
-    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+    <nav v-else class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center space-x-4">
@@ -39,7 +62,7 @@
             </div>
             <div>
               <h2 class="text-lg font-semibold text-gray-900">{{ studentInfo.name }}</h2>
-              <p class="text-sm text-gray-600">{{ studentInfo.grade }}年{{ studentInfo.class }}班 {{ studentInfo.classNumber }}號</p>
+              <p class="text-sm text-gray-600">{{ studentInfo.grade }}年{{ studentInfo.class }}班</p>
             </div>
           </div>
           <div class="text-right">
@@ -101,7 +124,10 @@
                   v-for="club in filteredClubs"
                   :key="club.id"
                   class="group relative bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300 cursor-pointer transform hover:-translate-y-1"
-                  :class="{ 'opacity-50': club.availableSpots === 0 }"
+                  :class="{ 
+                    'opacity-50': club.availableSpots === 0,
+                    'opacity-60 bg-gray-50': isClubSelected(club.id)
+                  }"
                   @click="addToSelection(club)"
                   draggable="true"
                   @dragstart="onDragStart($event, club)"
@@ -142,8 +168,15 @@
                     </div>
                   </div>
                   
+                  <!-- 已選擇指示器 -->
+                  <div v-if="isClubSelected(club.id)" class="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                  
                   <!-- 拖拽指示器 -->
-                  <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div v-else class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
                     </svg>
@@ -159,7 +192,20 @@
           <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 sticky top-24">
             <div class="p-6 border-b border-gray-200">
               <h3 class="text-lg font-semibold text-gray-900 mb-2">我的志願序</h3>
-              <p class="text-sm text-gray-600">拖拽調整順序 • 最多 5 個志願</p>
+              <p class="text-sm text-gray-600">拖拽調整順序</p>
+              <div class="mt-2 flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                  最少需選 {{ minRequiredChoices }} 個志願
+                </div>
+                <div :class="[
+                  'text-sm px-2 py-1 rounded',
+                  selectedClubs.length >= minRequiredChoices 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                ]">
+                  {{ selectedClubs.length >= minRequiredChoices ? '✅ 符合要求' : '⚠️ 尚未達標' }}
+                </div>
+              </div>
             </div>
 
             <!-- 志願列表 -->
@@ -239,7 +285,7 @@
                   :disabled="!canSubmit"
                   class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
                 >
-                  {{ isSubmitting ? '提交中...' : `提交 ${selectedClubs.length} 個志願` }}
+                  {{ isSubmitting ? '提交中...' : selectedClubs.length > 0 ? `提交 ${selectedClubs.length} 個志願` : `需選擇至少 ${minRequiredChoices} 個志願` }}
                 </button>
                 <p class="text-xs text-gray-500 mt-2 text-center">
                   提交後仍可修改，直到報名截止
@@ -279,21 +325,55 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { ClubCard, ClubFilter } from '@/student/types/club'
+import { useRoute } from 'vue-router'
+import { clubApi } from '@/api/club'
+import { schoolApi } from '@/api/school'
+import { studentApi } from '@/api/student'
+import { useAuthStore } from '@/stores/auth'
+import type { ClubCard } from '@/student/types/club'
 import type { StudentInfo, ClubPreference, DragState } from '@/student/types/student'
+import type { Club } from '@/types/club'
+import type { School } from '@/types/school'
 
-// 學生資訊
-const studentInfo = ref<StudentInfo>({
-  id: 'student-001',
-  studentId: '1001234567',
-  name: '王小明',
-  grade: 2,
-  class: '忠',
-  classNumber: 15,
-  gender: 'male',
-  idNumber: 'A123456789',
-  schoolId: 'school-abc',
-  isSpecialStudent: false
+const route = useRoute()
+const authStore = useAuthStore()
+
+// 響應式資料
+const isLoading = ref(true)
+const error = ref<string | null>(null)
+const realClubs = ref<Club[]>([])
+const schoolInfo = ref<School | null>(null)
+
+// 學生資訊（從認證系統取得真實資料）
+const studentInfo = computed<StudentInfo>(() => {
+  if (authStore.isStudent && authStore.user) {
+    return {
+      id: authStore.user.id.toString(),
+      studentId: authStore.user.student_id || 'N/A',
+      name: authStore.user.name,
+      grade: authStore.user.grade || 1,
+      class: authStore.user.class_name || 'N/A',
+      classNumber: 1, // 班級編號，暫時預設為1
+      gender: 'male', // 暫時預設，可以後續從資料庫取得
+      idNumber: 'N/A', // 基於隱私考量，不顯示完整身分證字號
+      schoolId: authStore.currentSchool?.toString() || 'N/A',
+      isSpecialStudent: false
+    }
+  }
+  
+  // 如果未登入，返回預設資料
+  return {
+    id: 'guest',
+    studentId: 'N/A',
+    name: '未登入',
+    grade: 1,
+    class: 'N/A',
+    classNumber: 1,
+    gender: 'male',
+    idNumber: 'N/A',
+    schoolId: 'N/A',
+    isSpecialStudent: false
+  }
 })
 
 // 搜尋和篩選
@@ -301,55 +381,46 @@ const searchTerm = ref('')
 const selectedCategory = ref('')
 const showAvailableOnly = ref(false)
 
-// 社團列表
-const clubs = ref<ClubCard[]>([
-  {
-    id: 'club-001',
-    name: '籃球社',
-    category: '體育類',
-    categoryColor: 'bg-green-100 text-green-800',
-    teacher: '李老師',
-    currentCount: 28,
-    maxCapacity: 30,
-    availableSpots: 2,
-    location: '體育館',
-    image: '/images/basketball.jpg',
-    isPopular: true,
-    rating: 4.5,
-    tags: ['運動', '團隊合作']
-  },
-  {
-    id: 'club-002',
-    name: '美術社',
-    category: '藝文類',
-    categoryColor: 'bg-purple-100 text-purple-800',
-    teacher: '陳老師',
-    currentCount: 15,
-    maxCapacity: 25,
-    availableSpots: 10,
-    location: '美術教室',
-    image: '/images/art.jpg',
-    isPopular: false,
-    rating: 4.2,
-    tags: ['創意', '藝術']
-  },
-  {
-    id: 'club-003',
-    name: '程式設計社',
-    category: '技能類',
-    categoryColor: 'bg-blue-100 text-blue-800',
-    teacher: '張老師',
-    currentCount: 20,
-    maxCapacity: 20,
-    availableSpots: 0,
-    location: '電腦教室',
-    image: '/images/coding.jpg',
-    isPopular: true,
-    rating: 4.8,
-    tags: ['程式', '邏輯思考']
-  },
-  // 更多社團...
-])
+// 計算屬性
+const schoolId = computed(() => {
+  return Number(route.params.schoolId)
+})
+
+const minRequiredChoices = computed(() => {
+  return schoolInfo.value?.min_required_choices || 3
+})
+
+// 將真實社團資料轉換為卡片格式
+const clubs = computed<ClubCard[]>(() => {
+  return realClubs.value.map(club => ({
+    id: club.id.toString(),
+    name: club.name,
+    category: club.category,
+    categoryColor: getCategoryColor(club.category),
+    teacher: club.teacher_name,
+    currentCount: club.current_members || 0,
+    maxCapacity: club.max_members,
+    availableSpots: club.max_members - (club.current_members || 0),
+    location: club.location,
+    image: `/images/club-${club.id}.jpg`,
+    isPopular: (club.current_members || 0) > club.max_members * 0.8,
+    rating: 4.0 + Math.random() * 0.8,
+    tags: [club.category, '社團']
+  }))
+})
+
+// 根據類別返回顏色
+const getCategoryColor = (category: string): string => {
+  const colors: Record<string, string> = {
+    '體育類': 'bg-green-100 text-green-800',
+    '藝文類': 'bg-purple-100 text-purple-800',
+    '技能類': 'bg-blue-100 text-blue-800',
+    '學術類': 'bg-yellow-100 text-yellow-800',
+    '服務類': 'bg-pink-100 text-pink-800',
+    '其他': 'bg-gray-100 text-gray-800'
+  }
+  return colors[category] || 'bg-gray-100 text-gray-800'
+}
 
 // 已選社團
 const selectedClubs = ref<ClubPreference[]>([])
@@ -384,7 +455,7 @@ const filteredClubs = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return selectedClubs.value.length > 0 && !isSubmitting.value
+  return selectedClubs.value.length >= minRequiredChoices.value && !isSubmitting.value
 })
 
 // 拖拽方法
@@ -457,11 +528,6 @@ const onDrop = (event: DragEvent) => {
 
 // 選社方法
 const addToSelection = (club: ClubCard) => {
-  if (selectedClubs.value.length >= 5) {
-    alert('最多只能選擇 5 個志願')
-    return
-  }
-  
   if (selectedClubs.value.some(selected => selected.clubId === club.id)) {
     alert('已選擇此社團')
     return
@@ -500,6 +566,11 @@ const checkEligibility = (club: ClubCard): boolean => {
   return true
 }
 
+// 檢查社團是否已被選中
+const isClubSelected = (clubId: string): boolean => {
+  return selectedClubs.value.some(selected => selected.clubId === clubId)
+}
+
 // 動畫效果
 const playAnimation = (type: 'add' | 'remove' | 'reorder' | 'submit', clubId?: string, fromIndex?: number, toIndex?: number) => {
   // 這裡可以添加更複雜的動畫邏輯
@@ -517,8 +588,13 @@ const confirmSubmit = async () => {
   showConfirmModal.value = false
   
   try {
-    // 模擬 API 提交
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // 準備提交的資料
+    const selections = {
+      club_choices: selectedClubs.value.map(club => parseInt(club.clubId))
+    }
+    
+    // 提交到真實 API
+    await clubApi.submitClubSelection(schoolId.value, parseInt(studentInfo.value.id), selections)
     
     playAnimation('submit')
     alert('志願提交成功！')
@@ -526,6 +602,7 @@ const confirmSubmit = async () => {
     // 導航到結果頁面或返回首頁
     goBack()
   } catch (error) {
+    console.error('提交失敗:', error)
     alert('提交失敗，請重試')
   } finally {
     isSubmitting.value = false
@@ -535,11 +612,47 @@ const confirmSubmit = async () => {
 // 導航方法
 const goBack = () => {
   // 返回學校首頁
-  window.location.href = '/schools/1/student'
+  window.location.href = `/schools/${schoolId.value}/student`
+}
+
+// 資料載入
+const loadData = async () => {
+  try {
+    isLoading.value = true
+    error.value = null
+    
+    // 載入學校資訊和社團資料
+    const [schoolData, clubsData] = await Promise.all([
+      schoolApi.getPublicSchool(schoolId.value),
+      clubApi.getClubs(schoolId.value)
+    ])
+    
+    schoolInfo.value = schoolData
+    realClubs.value = clubsData
+    
+    // 如果需要，也可以載入更完整的學生資訊
+    // const currentStudentData = await studentApi.getStudent(schoolId.value, authStore.user.id)
+    
+  } catch (err) {
+    console.error('載入資料失敗:', err)
+    error.value = '載入資料失敗，請稍後再試'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // 生命週期
 onMounted(() => {
+  // 檢查學生登入狀態
+  if (!authStore.isStudent) {
+    // 如果未登入，重導向到登入頁面
+    window.location.href = `/schools/${schoolId.value}/student/login`
+    return
+  }
+  
+  // 載入資料
+  loadData()
+  
   // 初始化時間倒數
   updateTimeRemaining()
   const timer = setInterval(updateTimeRemaining, 60000) // 每分鐘更新

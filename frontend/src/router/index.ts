@@ -186,12 +186,6 @@ const router = createRouter({
               meta: { role: 'student' }
             },
             {
-              path: 'choose',
-              name: 'student-choose',
-              component: () => import('@/pages/student/ChoosePage.vue'),
-              meta: { role: 'student' }
-            },
-            {
               path: 'result',
               name: 'student-result',
               component: () => import('@/pages/student/ResultPage.vue'),
