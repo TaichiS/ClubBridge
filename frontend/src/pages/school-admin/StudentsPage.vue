@@ -408,14 +408,14 @@
                 <div class="bg-gray-50 rounded-lg p-4">
                   <div class="flex items-center space-x-3 mb-4">
                     <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                       </svg>
                     </div>
                     <div class="flex-1">
                       <p class="text-sm text-gray-600">選社狀態</p>
                       <div class="mt-1">
-                        <span v-if="(selectedStudent as any).has_selection" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <span v-if="selectedStudent.has_selection" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                           </svg>
@@ -440,11 +440,11 @@
                     <div class="flex-1">
                       <p class="text-sm text-gray-600">分發結果</p>
                       <div class="mt-1">
-                        <span v-if="(selectedStudent as any).assigned_club" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <span v-if="selectedStudent.assigned_club" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          {{ (selectedStudent as any).assigned_club }}
+                          {{ selectedStudent.assigned_club }}
                         </span>
                         <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
                           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -670,17 +670,17 @@ const availableClasses = computed(() => {
 
 const studentsWithSelection = computed(() => {
   if (!students.value || !Array.isArray(students.value)) return []
-  return students.value.filter(student => (student as any).has_selection)
+  return students.value.filter(student => student.has_selection)
 })
 
 const studentsWithoutSelection = computed(() => {
   if (!students.value || !Array.isArray(students.value)) return []
-  return students.value.filter(student => !(student as any).has_selection)
+  return students.value.filter(student => !student.has_selection)
 })
 
 const assignedStudents = computed(() => {
   if (!students.value || !Array.isArray(students.value)) return []
-  return students.value.filter(student => (student as any).assigned_club)
+  return students.value.filter(student => student.assigned_club)
 })
 
 // 方法

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_15_064809) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_15_152200) do
   create_table "club_selections", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "club_id", null: false
@@ -37,7 +37,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_064809) do
     t.text "note"
     t.integer "condition1"
     t.integer "condition2"
-    t.string "condition3"
+    t.integer "condition3"
     t.string "teacher_email"
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
@@ -107,7 +107,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_064809) do
     t.string "id_card_number"
     t.integer "condition1"
     t.integer "condition2"
-    t.string "condition3"
+    t.integer "condition3"
     t.integer "school_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -12,6 +12,9 @@ export interface StudentInfo {
   schoolId: string
   isSpecialStudent: boolean
   specialConditions?: string[]
+  condition1: number
+  condition2: number
+  condition3: number
 }
 
 export interface StudentAuth {

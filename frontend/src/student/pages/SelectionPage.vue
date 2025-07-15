@@ -38,14 +38,26 @@
           
           <div class="flex items-center space-x-4">
             <div class="text-sm text-gray-600">
-              剩餘時間: <span class="font-semibold text-red-600">{{ timeRemaining }}</span>
+              剩餘時間: <span 
+                :class="[
+                  'font-semibold',
+                  isSelectionExpired ? 'text-red-600' : 
+                  timeRemaining.includes('分鐘') && !timeRemaining.includes('小時') ? 'text-red-600 animate-pulse' :
+                  timeRemaining.includes('小時') && !timeRemaining.includes('天') ? 'text-orange-600' :
+                  'text-green-600'
+                ]"
+              >{{ timeRemaining }}</span>
             </div>
             <button
               @click="submitSelection"
               :disabled="!canSubmit"
               class="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
             >
-              {{ isSubmitting ? '提交中...' : '提交志願' }}
+              {{ 
+                isSubmitting ? '提交中...' : 
+                isSelectionExpired ? '報名已截止' : 
+                '提交志願' 
+              }}
             </button>
           </div>
         </div>
@@ -126,10 +138,11 @@
                   class="group relative bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300 cursor-pointer transform hover:-translate-y-1"
                   :class="{ 
                     'opacity-50': club.availableSpots === 0,
-                    'opacity-60 bg-gray-50': isClubSelected(club.id)
+                    'opacity-60 bg-gray-50': isClubSelected(club.id),
+                    'opacity-30 bg-gray-100 cursor-not-allowed': !checkEligibility(club) || isSelectionExpired
                   }"
-                  @click="addToSelection(club)"
-                  draggable="true"
+                  @click="!checkEligibility(club) || isSelectionExpired ? null : addToSelection(club)"
+                  :draggable="checkEligibility(club) && !isSelectionExpired"
                   @dragstart="onDragStart($event, club)"
                 >
                   <div class="p-4">
@@ -168,8 +181,15 @@
                     </div>
                   </div>
                   
+                  <!-- 不符合條件指示器 -->
+                  <div v-if="!checkEligibility(club)" class="absolute top-2 right-2 bg-gray-900 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </div>
+                  
                   <!-- 已選擇指示器 -->
-                  <div v-if="isClubSelected(club.id)" class="absolute top-2 right-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                  <div v-else-if="isClubSelected(club.id)" class="absolute top-2 right-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -237,7 +257,7 @@
                     dragState.isDragging && dragState.draggedIndex === index ? 'opacity-50 scale-95' : '',
                     dragState.draggedOverIndex === index ? 'ring-2 ring-blue-400' : ''
                   ]"
-                  draggable="true"
+                  :draggable="!isSelectionExpired"
                   @dragstart="onDragStartInSelection($event, club, index)"
                   @dragend="onDragEnd"
                   @dragover.prevent="onDragOver(index)"
@@ -267,7 +287,8 @@
                       </div>
                       <button
                         @click="removeFromSelection(index)"
-                        class="text-red-500 hover:text-red-700 transition-colors duration-200"
+                        :disabled="isSelectionExpired"
+                        class="text-red-500 hover:text-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -285,7 +306,12 @@
                   :disabled="!canSubmit"
                   class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
                 >
-                  {{ isSubmitting ? '提交中...' : selectedClubs.length > 0 ? `提交 ${selectedClubs.length} 個志願` : `需選擇至少 ${minRequiredChoices} 個志願` }}
+                  {{ 
+                    isSubmitting ? '提交中...' : 
+                    isSelectionExpired ? '報名已截止' :
+                    selectedClubs.length > 0 ? `提交 ${selectedClubs.length} 個志願` : 
+                    `需選擇至少 ${minRequiredChoices} 個志願` 
+                  }}
                 </button>
                 <p class="text-xs text-gray-500 mt-2 text-center">
                   提交後仍可修改，直到報名截止
@@ -356,7 +382,10 @@ const studentInfo = computed<StudentInfo>(() => {
       gender: 'male', // 暫時預設，可以後續從資料庫取得
       idNumber: 'N/A', // 基於隱私考量，不顯示完整身分證字號
       schoolId: authStore.currentSchool?.toString() || 'N/A',
-      isSpecialStudent: false
+      isSpecialStudent: false,
+      condition1: authStore.user.condition1 || 0,
+      condition2: authStore.user.condition2 || 0,
+      condition3: authStore.user.condition3 || 0
     }
   }
   
@@ -371,7 +400,10 @@ const studentInfo = computed<StudentInfo>(() => {
     gender: 'male',
     idNumber: 'N/A',
     schoolId: 'N/A',
-    isSpecialStudent: false
+    isSpecialStudent: false,
+    condition1: 0,
+    condition2: 0,
+    condition3: 0
   }
 })
 
@@ -453,8 +485,20 @@ const filteredClubs = computed(() => {
   })
 })
 
+// 檢查選社是否已截止
+const isSelectionExpired = computed(() => {
+  if (!schoolInfo.value || !schoolInfo.value.club_selection_end_time) {
+    return false
+  }
+  const deadline = new Date(schoolInfo.value.club_selection_end_time)
+  const now = new Date()
+  return now > deadline
+})
+
 const canSubmit = computed(() => {
-  return selectedClubs.value.length >= minRequiredChoices.value && !isSubmitting.value
+  return selectedClubs.value.length >= minRequiredChoices.value && 
+         !isSubmitting.value && 
+         !isSelectionExpired.value
 })
 
 // 拖拽方法
@@ -527,6 +571,18 @@ const onDrop = (event: DragEvent) => {
 
 // 選社方法
 const addToSelection = (club: ClubCard) => {
+  // 檢查是否已截止
+  if (isSelectionExpired.value) {
+    alert('報名已截止，無法選擇社團')
+    return
+  }
+  
+  // 檢查是否符合條件
+  if (!checkEligibility(club)) {
+    alert('您不符合此社團的報名條件')
+    return
+  }
+  
   if (selectedClubs.value.some(selected => selected.clubId === club.id)) {
     alert('已選擇此社團')
     return
@@ -540,7 +596,7 @@ const addToSelection = (club: ClubCard) => {
     clubImage: club.image,
     priority: selectedClubs.value.length + 1,
     isEligible: checkEligibility(club),
-    eligibilityReason: checkEligibility(club) ? undefined : '不符合年級限制'
+    eligibilityReason: checkEligibility(club) ? undefined : '不符合條件限制'
   }
   
   selectedClubs.value.push(preference)
@@ -548,6 +604,12 @@ const addToSelection = (club: ClubCard) => {
 }
 
 const removeFromSelection = (index: number) => {
+  // 檢查是否已截止
+  if (isSelectionExpired.value) {
+    alert('報名已截止，無法修改志願')
+    return
+  }
+  
   const removedClub = selectedClubs.value[index]
   selectedClubs.value.splice(index, 1)
   
@@ -560,8 +622,42 @@ const removeFromSelection = (index: number) => {
 }
 
 // 檢查資格
-const checkEligibility = (_club: ClubCard): boolean => {
-  // 簡化的資格檢查邏輯
+const checkEligibility = (club: ClubCard): boolean => {
+  const student = studentInfo.value
+  const realClub = realClubs.value.find(c => c.id.toString() === club.id)
+  
+  if (!realClub) return false
+  
+  // 取得學生條件，預設為 0
+  const studentCondition1 = student.condition1 ?? 0
+  const studentCondition2 = student.condition2 ?? 0
+  const studentCondition3 = student.condition3 ?? 0
+  
+  // 取得社團條件，預設為 0
+  const clubCondition1 = realClub.condition1 ?? 0
+  const clubCondition2 = realClub.condition2 ?? 0
+  const clubCondition3 = realClub.condition3 ?? 0
+  
+  // 檢查條件一：如果社團設定了條件一限制（非0），學生必須符合
+  if (clubCondition1 !== 0) {
+    if (studentCondition1 !== clubCondition1) {
+      return false
+    }
+  }
+  
+  // 檢查條件二：如果社團設定了條件二限制（非0），學生必須符合
+  if (clubCondition2 !== 0) {
+    if (studentCondition2 !== clubCondition2) {
+      return false
+    }
+  }
+  
+  // 檢查條件三：如果社團設定了條件三限制（非0），學生必須符合
+  if (clubCondition3 !== 0) {
+    if (studentCondition3 !== clubCondition3) {
+      return false
+    }
+  }
   return true
 }
 
@@ -635,6 +731,9 @@ const loadData = async () => {
     schoolInfo.value = schoolData
     realClubs.value = clubsData
     
+    // 資料載入完成後重新計算時間倒數
+    updateTimeRemaining()
+    
     // 載入學生現有的選社記錄
     if (authStore.user) {
       try {
@@ -687,15 +786,29 @@ onMounted(() => {
 })
 
 const updateTimeRemaining = () => {
+  // 檢查是否有學校資訊和結束時間
+  if (!schoolInfo.value || !schoolInfo.value.club_selection_end_time) {
+    timeRemaining.value = '載入中...'
+    return
+  }
+  
   // 計算剩餘時間的邏輯
-  const deadline = new Date('2024-09-15T23:59:59')
+  const deadline = new Date(schoolInfo.value.club_selection_end_time)
   const now = new Date()
   const diff = deadline.getTime() - now.getTime()
   
   if (diff > 0) {
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    timeRemaining.value = `${days}天${hours}小時`
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    
+    if (days > 0) {
+      timeRemaining.value = `${days}天${hours}小時`
+    } else if (hours > 0) {
+      timeRemaining.value = `${hours}小時${minutes}分鐘`
+    } else {
+      timeRemaining.value = `${minutes}分鐘`
+    }
   } else {
     timeRemaining.value = '已截止'
   }

@@ -52,7 +52,10 @@ export const useAuthStore = defineStore('auth', () => {
           type: 'student',
           student_id: response.student.student_id,
           grade: response.student.grade,
-          class_name: response.student.class_name
+          class_name: response.student.class_name,
+          condition1: response.student.condition1,
+          condition2: response.student.condition2,
+          condition3: response.student.condition3
         },
         token: response.token,
         currentSchool: response.school.id

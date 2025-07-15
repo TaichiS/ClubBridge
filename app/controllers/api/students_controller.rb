@@ -15,7 +15,7 @@ class Api::StudentsController < ApplicationController
   }.freeze
 
   def index
-    students = Student.all.includes(:school)
+    students = Student.all.includes(:school, :club_selections)
     render json: students.map { |student| student_json(student) }
   end
 
@@ -73,18 +73,19 @@ class Api::StudentsController < ApplicationController
         end
         
         # 處理其他數值欄位
-        %w[grade class_number seat_number condition1 condition2].each do |field|
+        %w[grade class_number seat_number condition1 condition2 condition3].each do |field|
           if row_data[field].present? && row_data[field].is_a?(Numeric)
             row_data[field] = row_data[field].to_i
           end
         end
         
         # 處理字串欄位，移除前後空白
-        %w[name class_name id_card_number condition3].each do |field|
+        %w[name class_name id_card_number].each do |field|
           if row_data[field].present?
             row_data[field] = row_data[field].to_s.strip
           end
         end
+        
         
         student = Student.new(row_data)
         
@@ -139,6 +140,8 @@ class Api::StudentsController < ApplicationController
       condition2: student.condition2,
       condition3: student.condition3,
       school_id: student.school_id,
+      has_selection: student.club_selections.exists?,
+      assigned_club: nil, # 目前系統尚未實現分發功能
       created_at: student.created_at,
       updated_at: student.updated_at
     }

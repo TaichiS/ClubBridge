@@ -7,10 +7,12 @@ export interface Student {
   class_name: string
   seat_number: number
   id_number: string
-  condition_1?: number
-  condition_2?: number
-  condition_3?: string
+  condition1?: number
+  condition2?: number
+  condition3?: number
   school_id: number
+  has_selection: boolean
+  assigned_club?: string
   created_at: string
   updated_at: string
 }
@@ -23,9 +25,9 @@ export interface StudentImportData {
   student_number: string
   name: string
   id_number: string
-  condition_1?: number
-  condition_2?: number
-  condition_3?: string
+  condition1?: number
+  condition2?: number
+  condition3?: number
 }
 
 export interface StudentFilter {
@@ -33,8 +35,8 @@ export interface StudentFilter {
   class_number?: number
   class_name?: string
   search?: string
-  condition_1?: number
-  condition_2?: number
+  condition1?: number
+  condition2?: number
 }
 
 export interface StudentStatistics {
@@ -42,7 +44,7 @@ export interface StudentStatistics {
   by_grade: Record<number, number>
   by_class: Record<string, number>
   with_conditions: {
-    condition_1: Record<number, number>
-    condition_2: Record<number, number>
+    condition1: Record<number, number>
+    condition2: Record<number, number>
   }
 }

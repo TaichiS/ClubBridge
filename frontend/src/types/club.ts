@@ -11,7 +11,7 @@ export interface Club {
   note?: string
   condition1?: number
   condition2?: number
-  condition3?: string
+  condition3?: number
   teacher_email?: string
   school_id: number
   current_members?: number
@@ -31,7 +31,7 @@ export interface ClubImportData {
   note?: string
   condition1?: number
   condition2?: number
-  condition3?: string
+  condition3?: number
   teacher_email?: string
 }
 
@@ -83,7 +83,7 @@ export interface Student {
   id_number: string
   condition1?: number
   condition2?: number
-  condition3?: string
+  condition3?: number
   school_id: number
   created_at: string
   updated_at: string

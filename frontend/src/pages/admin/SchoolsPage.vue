@@ -111,6 +111,12 @@
                   查看詳情
                 </button>
                 <button
+                  @click="goToSchoolAdmin(school.id)"
+                  class="text-purple-600 hover:text-purple-900 mr-3"
+                >
+                  管理
+                </button>
+                <button
                   @click="approveSchool(school.id)"
                   :disabled="isLoading"
                   class="text-green-600 hover:text-green-900 mr-3 disabled:opacity-50"
@@ -169,9 +175,15 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button
                   @click="viewSchoolDetail(school.id)"
-                  class="text-blue-600 hover:text-blue-900"
+                  class="text-blue-600 hover:text-blue-900 mr-3"
                 >
                   查看詳情
+                </button>
+                <button
+                  @click="goToSchoolAdmin(school.id)"
+                  class="text-purple-600 hover:text-purple-900"
+                >
+                  管理
                 </button>
               </td>
             </tr>
@@ -298,6 +310,10 @@ const confirmReject = async () => {
 
 const viewSchoolDetail = (schoolId: number) => {
   router.push(`/admin/schools/${schoolId}`)
+}
+
+const goToSchoolAdmin = (schoolId: number) => {
+  router.push(`/schools/${schoolId}/admin`)
 }
 
 const formatDate = (dateString: string) => {

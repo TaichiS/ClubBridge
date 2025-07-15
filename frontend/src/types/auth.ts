@@ -9,6 +9,9 @@ export interface User {
   student_id?: string
   grade?: number
   class_name?: string
+  condition1?: number
+  condition2?: number
+  condition3?: number
   // 系統欄位
   api_token?: string
   created_at?: string
@@ -66,9 +69,9 @@ export interface Student {
   class_name: string
   seat_number: number
   id_number: string
-  condition_1?: number
-  condition_2?: number
-  condition_3?: string
+  condition1?: number
+  condition2?: number
+  condition3?: number
   school_id: number
   type: 'student'
   created_at: string
