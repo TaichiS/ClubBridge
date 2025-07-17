@@ -12,4 +12,5 @@ class Student < ApplicationRecord
   validates :class_name, presence: true
   validates :seat_number, presence: true, numericality: { greater_than: 0 }
   validates :id_card_number, presence: true, uniqueness: { scope: :school_id, message: "身分證字號重複" }
+  validates :special, inclusion: { in: [0, 1], message: "特殊身份標記必須是 0 或 1" }
 end

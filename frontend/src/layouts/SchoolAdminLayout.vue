@@ -75,6 +75,17 @@
                 </svg>
                 社團管理
               </router-link>
+              
+              <router-link
+                :to="`/schools/${route.params.schoolId}/admin/assignments`"
+                class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
+                :class="isActive('/admin/assignments') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
+              >
+                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                指定入社
+              </router-link>
             </nav>
           </div>
 
@@ -177,7 +188,7 @@ import { schoolApi } from '@/api/school'
 import type { School } from '@/types/school'
 
 const route = useRoute()
-const { user, currentSchool, logout } = useAuth()
+const { user, logout } = useAuth()
 
 // 學校資料
 const schoolData = ref<School | null>(null)

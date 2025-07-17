@@ -12,6 +12,7 @@ export interface User {
   condition1?: number
   condition2?: number
   condition3?: number
+  special?: number
   // 系統欄位
   api_token?: string
   created_at?: string
@@ -72,6 +73,7 @@ export interface Student {
   condition1?: number
   condition2?: number
   condition3?: number
+  special?: number
   school_id: number
   type: 'student'
   created_at: string

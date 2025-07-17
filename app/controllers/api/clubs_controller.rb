@@ -21,6 +21,17 @@ class Api::ClubsController < ApplicationController
     render json: Club.all
   end
 
+  def search
+    query = params[:q]
+    return render json: [] if query.blank?
+    
+    clubs = Club.where("name LIKE ? OR club_number LIKE ?", "%#{query}%", "%#{query}%")
+                .limit(10)
+                .order(:club_number)
+    
+    render json: clubs
+  end
+
   def hotness_report
     clubs_with_counts = Club
       .left_joins(:club_selections)

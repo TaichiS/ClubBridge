@@ -71,9 +71,17 @@ Rails.application.routes.draw do
         collection do
           post :import
           get :hotness_report
+          get :search
         end
       end
-      resources :club_selections, only: [:index]
+      resources :club_selections, only: [:index] do
+        collection do
+          post :assign_student
+          delete :revoke_special_status
+          get :special_students
+          get :search_students
+        end
+      end
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
       get :statistics, to: 'statistics#show'
       get 'statistics/daily', to: 'statistics#daily'

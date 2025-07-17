@@ -11,6 +11,9 @@ export interface ApiError {
   message: string
   errors?: Record<string, string[]>
   status: number
+  // 指定入社相關的額外欄位
+  existing_clubs?: string[]
+  requires_confirmation?: boolean
 }
 
 class ApiClient {
@@ -77,7 +80,10 @@ class ApiClient {
         const apiError: ApiError = {
           message: error.response?.data?.message || error.message || '發生未知錯誤',
           errors: error.response?.data?.errors,
-          status: error.response?.status || 0
+          status: error.response?.status || 0,
+          // 包含指定入社相關的額外欄位
+          existing_clubs: error.response?.data?.existing_clubs,
+          requires_confirmation: error.response?.data?.requires_confirmation
         }
 
         return Promise.reject(apiError)
