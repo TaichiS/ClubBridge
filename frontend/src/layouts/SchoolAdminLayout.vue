@@ -83,9 +83,9 @@
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">選社管理</h3>
             <nav class="space-y-1">
               <router-link
-                :to="`/schools/${route.params.schoolId}/admin/registration-stats`"
+                :to="`/schools/${route.params.schoolId}/admin/statistics`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
-                :class="isActive('/admin/registration-stats') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
+                :class="isActive('/admin/statistics') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
               >
                 <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>

@@ -120,10 +120,25 @@ class Api::StudentsController < ApplicationController
   end
 
   def student_params
-    params.require(:student).permit(
-      :grade, :class_number, :class_name, :seat_number, :student_id,
-      :name, :id_card_number, :condition1, :condition2, :condition3
+    # 處理前端欄位名稱與資料庫欄位名稱的對應
+    permitted_params = params.require(:student).permit(
+      :grade, :class_number, :class_name, :seat_number, :student_id, :student_number,
+      :name, :id_card_number, :id_number, :condition1, :condition2, :condition3
     )
+    
+    # 統一欄位名稱：前端可能送 student_number 或 student_id
+    if permitted_params[:student_number].present?
+      permitted_params[:student_id] = permitted_params[:student_number]
+      permitted_params.delete(:student_number)
+    end
+    
+    # 統一欄位名稱：前端可能送 id_number 或 id_card_number
+    if permitted_params[:id_number].present?
+      permitted_params[:id_card_number] = permitted_params[:id_number]
+      permitted_params.delete(:id_number)
+    end
+    
+    permitted_params
   end
 
   def student_json(student)
