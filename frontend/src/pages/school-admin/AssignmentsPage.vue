@@ -95,7 +95,7 @@
     <!-- 特殊身份學生列表 -->
     <div class="bg-white rounded-lg shadow-sm border p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-500">特殊身份學生列表</h2>
+        <h2 class="text-lg font-semibold text-gray-500">特殊身份學生列表 - 共計 {{specialStudents.length}} 人</h2>
         <button
           @click="loadSpecialStudents"
           class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"

@@ -984,7 +984,7 @@
                 <div class="mt-4 bg-gray-50 rounded-lg p-3">
                   <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-600">共填寫 <span class="font-medium text-blue-600">{{ studentSelections.length }}</span> 個志願</span>
-                    <span class="text-gray-500">首次選社：{{ formatDateTime(studentSelections[0]?.created_at, 'date') }}</span>
+                    <span class="text-gray-500">選社時間：{{ formatDateTime(studentSelections[0]?.created_at, 'datetime') }}</span>
                   </div>
                 </div>
               </div>

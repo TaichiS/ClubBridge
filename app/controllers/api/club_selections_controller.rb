@@ -1,6 +1,6 @@
 class Api::ClubSelectionsController < ApplicationController
-  # 這個 controller 專門給管理員使用，只提供查看功能
-  # 學生選社功能已移至 Api::Student::ClubSelectionsController
+  # 這個 controller 專門給管理員使用，只提供管理員權限相關功能
+  # 公開功能與學生選社功能已移至 Api::Student::ClubSelectionsController
 
   # 取得選社記錄（管理員專用）
   def index
