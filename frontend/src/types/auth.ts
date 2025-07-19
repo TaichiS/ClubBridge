@@ -9,6 +9,7 @@ export interface User {
   student_id?: string
   grade?: number
   class_name?: string
+  seat_number?: number
   condition1?: number
   condition2?: number
   condition3?: number

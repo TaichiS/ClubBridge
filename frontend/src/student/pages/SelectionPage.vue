@@ -23,48 +23,149 @@
       </div>
     </div>
 
-    <!-- 頂部導航 -->
-    <nav v-else class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center space-x-4">
-            <button @click="goBack" class="text-gray-600 hover:text-gray-900">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
+    <!-- 特殊學生警告 -->
+    <div v-else-if="studentInfo.isSpecialStudent && assignedClubName" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+      <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden">
+        <!-- 頂部橫幅 -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-6 text-white">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="text-4xl">🎯</div>
+              <div>
+                <h2 class="text-2xl font-bold">已指定入社</h2>
+                <p class="text-blue-100">特殊管道指定</p>
+              </div>
+            </div>
+            <button 
+              @click="logout()" 
+              class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+            >
+              登出
             </button>
-            <h1 class="text-xl font-bold text-gray-900">社團選擇</h1>
+          </div>
+        </div>
+        
+        <!-- 學生資訊 -->
+        <div class="p-8">
+          <div class="bg-gray-50 rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                <span class="text-white font-bold text-sm">{{ studentInfo.name.charAt(0) }}</span>
+              </div>
+              學生資訊
+            </h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-gray-600">姓名</p>
+                <p class="font-semibold text-gray-900">{{ studentInfo.name }}</p>
+              </div>
+              <div>
+                <p class="text-gray-600">學號</p>
+                <p class="font-semibold text-gray-900">{{ studentInfo.studentId }}</p>
+              </div>
+              <div>
+                <p class="text-gray-600">年級班級</p>
+                <p class="font-semibold text-gray-900">{{ studentInfo.grade }}年{{ studentInfo.class }}班</p>
+              </div>
+              <div>
+                <p class="text-gray-600">座號</p>
+                <p class="font-semibold text-gray-900">{{ studentInfo.classNumber }}號</p>
+              </div>
+            </div>
           </div>
           
-          <div class="flex items-center space-x-4">
-            <div class="text-sm text-gray-600">
-              剩餘時間: <span 
-                :class="[
-                  'font-semibold',
-                  isSelectionExpired ? 'text-red-600' : 
-                  timeRemaining.includes('分鐘') && !timeRemaining.includes('小時') ? 'text-red-600 animate-pulse' :
-                  timeRemaining.includes('小時') && !timeRemaining.includes('天') ? 'text-orange-600' :
-                  'text-green-600'
-                ]"
-              >{{ timeRemaining }}</span>
+          <!-- 指定社團資訊 -->
+          <div class="bg-blue-50 rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">指定社團</h3>
+            <div class="text-center">
+              <p class="text-gray-600 mb-2">您已透過特殊管道指定到</p>
+              <p class="text-xl font-bold text-blue-600 mb-3">{{ assignedClubName }}</p>
+              <div v-if="assignedTime" class="text-sm text-gray-500">
+                <p>指定時間：{{ assignedTime }}</p>
+              </div>
             </div>
-            <button
-              @click="submitSelection"
-              :disabled="!canSubmit"
-              class="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+          </div>
+          
+          <!-- 提示訊息 -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+            <div class="flex items-start space-x-3">
+              <div class="text-yellow-500 text-xl">⚠️</div>
+              <div>
+                <p class="text-sm font-medium text-yellow-800">重要提醒</p>
+                <p class="text-sm text-yellow-700 mt-1">您已透過特殊管道指定入社，無需再進行選社操作。如有疑問請聯繫學校相關人員。</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 操作按鈕 -->
+          <div class="flex space-x-4">
+            <button 
+              @click="goBack()" 
+              class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
-              {{ 
-                isSubmitting ? '提交中...' : 
-                isSelectionExpired ? '報名已截止' : 
-                '提交志願' 
-              }}
+              返回首頁
+            </button>
+            <button 
+              @click="logout()" 
+              class="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium"
+            >
+              登出系統
             </button>
           </div>
         </div>
       </div>
-    </nav>
+    </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 正常選社頁面 -->
+    <div v-else>
+      <!-- 頂部導航 -->
+      <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <div class="flex items-center space-x-4">
+              <button @click="goBack" class="text-gray-600 hover:text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+              <h1 class="text-xl font-bold text-gray-900">社團選擇</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+              <div class="text-sm text-gray-600">
+                剩餘時間: <span 
+                  :class="[
+                    'font-semibold',
+                    isSelectionExpired ? 'text-red-600' : 
+                    timeRemaining.includes('分鐘') && !timeRemaining.includes('小時') ? 'text-red-600 animate-pulse' :
+                    timeRemaining.includes('小時') && !timeRemaining.includes('天') ? 'text-orange-600' :
+                    'text-green-600'
+                  ]"
+                >{{ timeRemaining }}</span>
+              </div>
+              <button
+                @click="logout"
+                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                登出
+              </button>
+              <button
+                @click="submitSelection"
+                :disabled="!canSubmit"
+                class="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+              >
+                {{ 
+                  isSubmitting ? '提交中...' : 
+                  isSelectionExpired ? '報名已截止' : 
+                  '提交志願' 
+                }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 學生資訊卡片 -->
       <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
         <div class="flex items-center justify-between">
@@ -320,29 +421,30 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
 
-    <!-- 確認對話框 -->
-    <div v-if="showConfirmModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">確認提交志願</h3>
-        <p class="text-gray-600 mb-6">
-          您即將提交 {{ selectedClubs.length }} 個志願。提交後您仍可在報名截止前修改志願序。
-        </p>
-        <div class="flex space-x-4">
-          <button
-            @click="showConfirmModal = false"
-            class="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-          >
-            取消
-          </button>
-          <button
-            @click="confirmSubmit"
-            class="flex-1 py-2 px-4 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200"
-          >
-            確認提交
-          </button>
+      <!-- 確認對話框 -->
+      <div v-if="showConfirmModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">確認提交志願</h3>
+          <p class="text-gray-600 mb-6">
+            您即將提交 {{ selectedClubs.length }} 個志願。提交後您仍可在報名截止前修改志願序。
+          </p>
+          <div class="flex space-x-4">
+            <button
+              @click="showConfirmModal = false"
+              class="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+            >
+              取消
+            </button>
+            <button
+              @click="confirmSubmit"
+              class="flex-1 py-2 px-4 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200"
+            >
+              確認提交
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -368,6 +470,8 @@ const isLoading = ref(true)
 const error = ref<string | null>(null)
 const realClubs = ref<Club[]>([])
 const schoolInfo = ref<School | null>(null)
+const assignedClubName = ref<string | null>(null)
+const assignedTime = ref<string | null>(null)
 
 // 學生資訊（從認證系統取得真實資料）
 const studentInfo = computed<StudentInfo>(() => {
@@ -378,11 +482,11 @@ const studentInfo = computed<StudentInfo>(() => {
       name: authStore.user.name,
       grade: authStore.user.grade || 1,
       class: authStore.user.class_name || 'N/A',
-      classNumber: 1, // 班級編號，暫時預設為1
+      classNumber: authStore.user.seat_number || 0,
       gender: 'male', // 暫時預設，可以後續從資料庫取得
       idNumber: 'N/A', // 基於隱私考量，不顯示完整身分證字號
       schoolId: authStore.currentSchool?.toString() || 'N/A',
-      isSpecialStudent: false,
+      isSpecialStudent: (authStore.user.special || 0) !== 0,
       condition1: authStore.user.condition1 || 0,
       condition2: authStore.user.condition2 || 0,
       condition3: authStore.user.condition3 || 0
@@ -716,6 +820,20 @@ const goBack = () => {
   window.location.href = `/schools/${schoolId.value}/student`
 }
 
+// 登出方法
+const logout = async () => {
+  try {
+    await authStore.logout()
+    // 重導向到學校首頁
+    window.location.href = `/schools/${schoolId.value}`
+  } catch (error) {
+    console.error('登出失敗:', error)
+    // 即使 API 失敗也清除本地狀態
+    authStore.clearAuthData()
+    window.location.href = `/schools/${schoolId.value}`
+  }
+}
+
 // 資料載入
 const loadData = async () => {
   try {
@@ -738,18 +856,38 @@ const loadData = async () => {
     if (authStore.user) {
       try {
         const existingSelections = await clubApi.getStudentSelections(schoolId.value)
+        
         if (existingSelections.length > 0) {
-          // 將現有選社記錄轉換為 ClubPreference 格式
-          selectedClubs.value = existingSelections.map(selection => ({
-            id: `pref-${selection.id}`,
-            clubId: selection.club_id.toString(),
-            clubName: selection.club_name || '未知社團',
-            clubCategory: selection.club?.category || '未知',
-            clubImage: `/images/club-${selection.club_id}.jpg`,
-            priority: selection.preference,
-            isEligible: true,
-            eligibilityReason: undefined
-          })).sort((a, b) => a.priority - b.priority)
+          // 如果是特殊學生，取得第一志願作為指定社團
+          if (studentInfo.value.isSpecialStudent) {
+            const firstChoice = existingSelections.find(selection => selection.preference === 1)
+            if (firstChoice) {
+              assignedClubName.value = firstChoice.club_name || '未知社團'
+              // 格式化指定時間
+              if (firstChoice.created_at) {
+                const date = new Date(firstChoice.created_at)
+                assignedTime.value = date.toLocaleString('zh-TW', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })
+              }
+            }
+          } else {
+            // 一般學生：將現有選社記錄轉換為 ClubPreference 格式
+            selectedClubs.value = existingSelections.map(selection => ({
+              id: `pref-${selection.id}`,
+              clubId: selection.club_id.toString(),
+              clubName: selection.club_name || '未知社團',
+              clubCategory: selection.club?.category || '未知',
+              clubImage: `/images/club-${selection.club_id}.jpg`,
+              priority: selection.preference,
+              isEligible: true,
+              eligibilityReason: undefined
+            })).sort((a, b) => a.priority - b.priority)
+          }
         }
       } catch (error) {
         console.warn('無法載入現有選社記錄:', error)
@@ -765,7 +903,9 @@ const loadData = async () => {
 }
 
 // 生命週期
-onMounted(() => {
+let timer: number | null = null
+
+onMounted(async () => {
   // 檢查學生登入狀態
   if (!authStore.isStudent) {
     // 如果未登入，重導向到登入頁面
@@ -774,15 +914,17 @@ onMounted(() => {
   }
   
   // 載入資料
-  loadData()
+  await loadData()
   
   // 初始化時間倒數
   updateTimeRemaining()
-  const timer = setInterval(updateTimeRemaining, 60000) // 每分鐘更新
-  
-  onUnmounted(() => {
+  timer = setInterval(updateTimeRemaining, 60000) // 每分鐘更新
+})
+
+onUnmounted(() => {
+  if (timer) {
     clearInterval(timer)
-  })
+  }
 })
 
 const updateTimeRemaining = () => {

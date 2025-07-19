@@ -2,7 +2,7 @@ require 'swagger_helper'
 
 describe 'Club Selections API', type: :request do
   let(:school) { School.create!(name: "Test School", status: :approved) }
-  let(:student) { Student.create!(school: school, name: "Test Student", student_id: "S001", id_card_number: "A123456789") }
+  let(:student) { Student.create!(school: school, name: "Test Student", student_id: "S001", id_card_number: "A123456789", grade: 1, class_number: 1, class_name: "忠", seat_number: 1) }
   let!(:club1) { Club.create!(school: school, name: "Club 1", club_number: 1, category: "Test", teacher_name: "T1", description: "D1", max_members: 10, location: "L1") }
   let!(:club2) { Club.create!(school: school, name: "Club 2", club_number: 2, category: "Test", teacher_name: "T2", description: "D2", max_members: 10, location: "L2") }
   let!(:club3) { Club.create!(school: school, name: "Club 3", club_number: 3, category: "Test", teacher_name: "T3", description: "D3", max_members: 10, location: "L3") }

@@ -5,6 +5,330 @@ info:
   version: v1
   description: API documentation for the ClubBridge multi-school club selection system.
 paths:
+  "/api/admin/schools":
+    get:
+      summary: List all schools
+      tags:
+      - Admin::Schools
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: successful
+  "/api/admin/schools/{id}":
+    get:
+      summary: Show a school
+      tags:
+      - Admin::Schools
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/api/admin/schools/pending":
+    get:
+      summary: List pending schools
+      tags:
+      - Admin::Schools
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: successful
+  "/api/admin/schools/{id}/approve":
+    post:
+      summary: Approve a school
+      tags:
+      - Admin::Schools
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        description: ID of the school to approve
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/api/admin/schools/{id}/reject":
+    post:
+      summary: Reject a school
+      tags:
+      - Admin::Schools
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        description: ID of the school to reject
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/api/admin/users":
+    get:
+      summary: List all users
+      tags:
+      - Admin::Users
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: successful
+  "/api/admin/users/{id}":
+    get:
+      summary: Show a user
+      tags:
+      - Admin::Users
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+    patch:
+      summary: Update a user
+      tags:
+      - Admin::Users
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    role:
+                      type: string
+                      enum:
+                      - school_user
+                      - super_admin
+  "/api/admin/users/{id}/add_school":
+    post:
+      summary: Add a school to a user
+      tags:
+      - Admin::Users
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                school_id:
+                  type: integer
+                role:
+                  type: string
+                  enum:
+                  - admin
+                  - teacher
+              required:
+              - school_id
+              - role
+  "/api/admin/users/{id}/remove_school":
+    delete:
+      summary: Remove a school from a user
+      tags:
+      - Admin::Users
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                school_id:
+                  type: integer
+              required:
+              - school_id
+  "/api/auth/google":
+    post:
+      summary: Google Login
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: successful
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Google ID Token
+              required:
+              - token
+  "/api/auth/student":
+    post:
+      summary: Student Login
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: successful
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                school_id:
+                  type: string
+                student_id:
+                  type: string
+                id_card_number:
+                  type: string
+              required:
+              - school_id
+              - student_id
+              - id_card_number
+  "/api/auth/logout":
+    post:
+      summary: Logout
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      responses:
+        '204':
+          description: successful
+  "/api/auth/refresh":
+    post:
+      summary: Refresh Token
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+              required:
+              - refresh_token
+  "/api/auth/me":
+    get:
+      summary: Get Current User
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: successful
+  "/api/auth/validate":
+    get:
+      summary: Validate Token
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      responses:
+        '204':
+          description: successful
+        '401':
+          description: unauthorized
+  "/api/schools/{school_id}/club_selections":
+    post:
+      summary: Create club selections for a student
+      tags:
+      - Club Selections
+      security: []
+      parameters:
+      - name: school_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: successful
+        '404':
+          description: club not found
+        '400':
+          description: invalid parameters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                club_selection:
+                  type: object
+                  properties:
+                    student_id:
+                      type: integer
+                    club_ids:
+                      type: array
+                      items:
+                        type: integer
+                  required:
+                  - student_id
+                  - club_ids
+              required:
+              - club_selection
   "/api/schools/{school_id}/clubs":
     get:
       summary: List clubs
@@ -67,6 +391,48 @@ paths:
                   - description
                   - max_members
                   - location
+  "/api/schools/{school_id}/clubs/{id}":
+    parameters:
+    - name: school_id
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    patch:
+      summary: Update a club
+      tags:
+      - Clubs
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                club:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+    delete:
+      summary: Delete a club
+      tags:
+      - Clubs
+      security:
+      - bearer_auth: []
+      responses:
+        '204':
+          description: successful
   "/api/schools/{school_id}/clubs/import":
     post:
       summary: Import clubs from Excel
@@ -89,6 +455,22 @@ paths:
             schema:
               type: file
         required: true
+  "/api/schools/{school_id}/clubs/hotness_report":
+    get:
+      summary: Get club hotness report
+      tags:
+      - Clubs
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: school_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
   "/api/schools/{school_id}/setting":
     get:
       summary: Show school settings
@@ -168,8 +550,6 @@ paths:
       responses:
         '201':
           description: successful
-        '401':
-          description: unauthorized
       requestBody:
         content:
           application/json:
@@ -185,27 +565,16 @@ paths:
                       example: My Awesome School
                   required:
                   - name
-  "/api/admin/schools/pending":
+  "/api/schools/{school_id}/statistics":
     get:
-      summary: List pending schools
+      summary: Get school statistics
       tags:
-      - Admin
-      security:
-      - bearer_auth: []
-      responses:
-        '200':
-          description: successful
-  "/api/admin/schools/{id}/approve":
-    post:
-      summary: Approve a school
-      tags:
-      - Admin
+      - Statistics
       security:
       - bearer_auth: []
       parameters:
-      - name: id
+      - name: school_id
         in: path
-        description: ID of the school to approve
         required: true
         schema:
           type: string

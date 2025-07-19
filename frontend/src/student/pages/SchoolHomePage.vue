@@ -24,16 +24,10 @@
               瀏覽社團
             </button>
             <button
-              @click="navigateToSelection"
-              class="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 mr-2"
-            >
-              開始選社
-            </button>
-            <button
               @click="navigateToLogin"
               class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
             >
-              學生登入
+              開始選社
             </button>
           </div>
         </div>

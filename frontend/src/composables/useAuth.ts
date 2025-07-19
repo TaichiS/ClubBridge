@@ -127,15 +127,9 @@ export function useAuth() {
         break
       case 'student':
         if (schoolId) {
-          // 檢查學生是否有特殊身份
-          const currentUser = authStore.user
-          if (currentUser?.special === 1) {
-            // 特殊身份學生導向結果頁面，顯示已被指定的社團
-            router.push(`/schools/${schoolId}/student/result`)
-          } else {
-            // 一般學生導向選社頁面
-            router.push(`/schools/${schoolId}/student/selection`)
-          }
+          // 所有學生（包括特殊學生）都導向選社頁面
+          // 特殊學生會在選社頁面中顯示警告訊息
+          router.push(`/schools/${schoolId}/student/selection`)
         } else {
           router.push('/')
         }

@@ -125,6 +125,14 @@ API設計由 swagger 管理，可以透過以下網址進行查詢：
 http://localhost:5173/api-docs/index.html
 
 
+要更新 Swagger 文件，只需要執行：
+bundle exec rake rswag:specs:swaggerize
+這個指令會：
+1. 執行所有的 RSpec 測試
+2. 從測試檔案中的 swagger 註解自動生成完整的 API 文件
+3. 更新 swagger/v1/swagger.yaml 檔案
+
+
 ---
 
 ## 🎨 前端系統詳解

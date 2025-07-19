@@ -76,9 +76,11 @@ class Api::AuthController < ApplicationController
         student_id: student.student_id,
         grade: student.grade,
         class_name: student.class_name,
+        seat_number: student.seat_number,
         condition1: student.condition1,
         condition2: student.condition2,
         condition3: student.condition3,
+        special: student.special,
         type: 'student'
       },
       school: {
@@ -130,9 +132,11 @@ class Api::AuthController < ApplicationController
         student_id: @current_student.student_id,
         grade: @current_student.grade,
         class_name: @current_student.class_name,
+        seat_number: @current_student.seat_number,
         condition1: @current_student.condition1,
         condition2: @current_student.condition2,
         condition3: @current_student.condition3,
+        special: @current_student.special,
         type: 'student'
       }
     else
