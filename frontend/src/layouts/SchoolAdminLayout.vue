@@ -36,7 +36,7 @@
                 </svg>
                 編輯公告
               </router-link>
-              
+
               <router-link
                 :to="`/schools/${route.params.schoolId}/admin/backup`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
@@ -64,7 +64,7 @@
                 </svg>
                 學生管理
               </router-link>
-              
+
               <router-link
                 :to="`/schools/${route.params.schoolId}/admin/clubs`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
@@ -75,7 +75,7 @@
                 </svg>
                 社團管理
               </router-link>
-              
+
               <router-link
                 :to="`/schools/${route.params.schoolId}/admin/assignments`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
@@ -85,6 +85,18 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
                 指定入社
+              </router-link>
+
+              <router-link
+                :to="`/schools/${route.params.schoolId}/admin/random-assignments`"
+                class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
+                :class="isActive('/admin/random-assignments') ? 'bg-orange-100 text-orange-700' : 'text-gray-700 hover:bg-gray-100'"
+              >
+                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                隨機選社
               </router-link>
             </nav>
           </div>
@@ -103,18 +115,18 @@
                 </svg>
                 即時統計
               </router-link>
-              
+
               <router-link
-                :to="`/schools/${route.params.schoolId}/admin/assignment`"
+                :to="`/schools/${route.params.schoolId}/admin/allocation`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
-                :class="isActive('/admin/assignment') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
+                :class="isActive('/admin/allocation') ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'"
               >
                 <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
                 開始分發
               </router-link>
-              
+
               <router-link
                 :to="`/schools/${route.params.schoolId}/admin/results`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
@@ -132,7 +144,7 @@
           <div class="px-4 mb-4">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">系統設定</h3>
             <nav class="space-y-1">
-              
+
               <router-link
                 :to="`/schools/${route.params.schoolId}/admin/settings`"
                 class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
@@ -201,9 +213,9 @@ const schoolName = computed(() => {
 // 計算屬性：用戶名首字母
 const userInitial = computed(() => {
   if (!user.value) return 'A'
-  
+
   const userValue = user.value as any
-  
+
   if (userValue.name) {
     const name = userValue.name
     // 如果是中文姓名，取最後一個字
@@ -213,34 +225,34 @@ const userInitial = computed(() => {
     // 英文姓名取首字母
     return name.charAt(0).toUpperCase()
   }
-  
+
   if (userValue.email) {
     return userValue.email.charAt(0).toUpperCase()
   }
-  
+
   return 'A'
 })
 
 // 計算屬性：用戶顯示名稱
 const currentUser = computed(() => {
   if (!user.value) return null
-  
+
   const userValue = user.value as any
-  
+
   if (userValue.name) {
     return {
       name: userValue.name || '管理員',
       email: userValue.email || ''
     }
   }
-  
+
   if (userValue.email) {
     return {
       name: userValue.email.split('@')[0] || '管理員',
       email: userValue.email || ''
     }
   }
-  
+
   return {
     name: '管理員',
     email: ''
@@ -265,7 +277,7 @@ const handleLogout = async () => {
 const loadSchoolData = async () => {
   const schoolId = route.params.schoolId
   if (!schoolId) return
-  
+
   try {
     schoolData.value = await schoolApi.getSchool(Number(schoolId))
   } catch (error) {

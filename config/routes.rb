@@ -77,6 +77,8 @@ Rails.application.routes.draw do
       resources :club_selections, only: [:index] do
         collection do
           post :assign_student
+          post :assign_random_clubs
+          get :random_assignment_preview
           delete :revoke_special_status
           get :special_students
           get :search_students

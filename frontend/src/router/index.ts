@@ -113,6 +113,11 @@ const router = createRouter({
               component: () => import('@/pages/school-admin/AssignmentsPage.vue')
             },
             {
+              path: 'random-assignments',
+              name: 'school-admin-random-assignments',
+              component: () => import('@/views/admin/RandomAssignments.vue')
+            },
+            {
               path: 'semester-setup',
               name: 'school-admin-semester-setup',
               component: () => import('@/pages/school-admin/SemesterSetupPage.vue')

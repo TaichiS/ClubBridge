@@ -30,7 +30,144 @@ class Api::ClubSelectionsController < ApplicationController
     }
   end
 
-  # 指定學生入社（管理員專用）
+  # 指定學生入社（管理員測試用，可以指定隨機數個社團，以隨機順序分配給所有學生）
+  # 本功能用於測試和演示，會覆蓋已經存在的選社記錄，必須謹慎使用。
+  def assign_random_clubs
+    # 使用者提供要選取多少個社團
+    club_count = params[:club_count].to_i
+    # 參數驗證
+    if club_count <= 0
+      return render json: { error: "社團數量必須大於 0" }, status: :bad_request
+    end
+
+    # 檢查管理員權限
+    unless @current_user
+      return render json: { error: "需要管理員身份才能執行此操作" }, status: :unauthorized
+    end
+
+    # 選取所有社團 (acts_as_tenant 會自動限制在當前學校)
+    all_clubs = Club.all
+
+    if all_clubs.count < club_count
+      return render json: { error: "可用社團數量 (#{all_clubs.count}) 少於指定數量 (#{club_count})" }, status: :bad_request
+    end
+
+    # 選取所有非特殊身份的學生 (special = 0)，不論是否已有選社記錄
+    target_students = Student.where(special: 0)
+
+    if target_students.empty?
+      return render json: { error: "沒有找到可進行隨機選社的學生" }, status: :not_found
+    end
+
+    assigned_students = []
+    total_selections_created = 0
+
+    ActiveRecord::Base.transaction do
+      target_students.each do |student|
+        # 為每個學生隨機選取 club_count 個社團
+        selected_clubs = all_clubs.sample(club_count)
+
+        # 清除該學生之前的選社記錄（如果有的話）
+        student.club_selections.destroy_all
+
+        student_selections = []
+        # 按照隨機順序創建志願序
+        selected_clubs.each_with_index do |club, index|
+          selection = student.club_selections.create!(
+            club_id: club.id,
+            preference: index + 1  # 志願序從 1 開始
+          )
+
+          student_selections << {
+            club_name: club.name,
+            club_number: club.club_number,
+            preference: selection.preference
+          }
+          total_selections_created += 1
+        end
+
+        assigned_students << {
+          student_name: student.name,
+          student_number: student.student_id,
+          grade: student.grade,
+          class_name: student.class_name,
+          selections: student_selections
+        }
+
+        # 記錄日誌
+        Rails.logger.info "Admin random assignment - Student #{student.id} (#{student.name}) assigned #{club_count} clubs"
+      end
+    end
+
+    render json: {
+      message: "成功為所有學生重新隨機分配社團志願序",
+      summary: {
+        total_students: assigned_students.length,
+        clubs_per_student: club_count,
+        total_selections_created: total_selections_created,
+        available_clubs: all_clubs.count
+      },
+      assignments: assigned_students
+    }
+
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: "隨機分配失敗：#{e.message}" }, status: :unprocessable_entity
+  rescue StandardError => e
+    Rails.logger.error "Random club assignment error: #{e.message}"
+    render json: { error: "系統錯誤，請稍後再試" }, status: :internal_server_error
+  end
+
+  # 隨機選社預覽（管理員專用）
+  def random_assignment_preview
+    # 檢查管理員權限
+    unless @current_user
+      return render json: { error: "需要管理員身份才能執行此操作" }, status: :unauthorized
+    end
+
+    # 參數驗證
+    club_count = params[:club_count].to_i
+    if club_count <= 0
+      return render json: { error: "社團數量必須大於 0" }, status: :bad_request
+    end
+
+    # 選取所有社團 (acts_as_tenant 會自動限制在當前學校)
+    all_clubs = Club.all
+
+    if all_clubs.count < club_count
+      return render json: { error: "可用社團數量 (#{all_clubs.count}) 少於指定數量 (#{club_count})" }, status: :bad_request
+    end
+
+    # 選取所有尚未選社的學生 (special = 0 且沒有選社記錄)
+    students_without_selections = Student.where(special: 0)
+                                        .left_joins(:club_selections)
+                                        .where(club_selections: { id: nil })
+
+    if students_without_selections.empty?
+      return render json: { error: "沒有找到尚未選社的學生" }, status: :not_found
+    end
+
+    # 計算統計資訊
+    students_count = students_without_selections.count
+    clubs_count = all_clubs.count
+    total_selections_will_create = students_count * club_count
+    average_selections_per_club = total_selections_will_create.to_f / clubs_count
+
+    render json: {
+      studentsCount: students_count,
+      clubsCount: clubs_count,
+      totalSelectionsWillCreate: total_selections_will_create,
+      averageSelectionsPerClub: average_selections_per_club.round(1),
+      clubCountRequested: club_count,
+      message: "預覽資訊載入成功"
+    }
+
+  rescue StandardError => e
+    Rails.logger.error "Random assignment preview error: #{e.message}"
+    render json: { error: "系統錯誤，請稍後再試" }, status: :internal_server_error
+  end
+
+
+  # 指定特殊學生入社（管理員專用）
   def assign_student
     student_id = params[:student_id]
     club_id = params[:club_id]
