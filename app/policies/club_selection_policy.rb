@@ -38,6 +38,6 @@ class ClubSelectionPolicy < ApplicationPolicy
 
   def user_is_admin?
     return false unless @user
-    @user.role == "school_admin"
+    @user.school_admin? || @user.super_admin?
   end
 end

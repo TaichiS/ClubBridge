@@ -82,6 +82,12 @@ Rails.application.routes.draw do
           delete :revoke_special_status
           get :special_students
           get :search_students
+          post :allocate_clubs
+        end
+      end
+      resources :club_memberships, only: [] do
+        collection do
+          get :count
         end
       end
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'

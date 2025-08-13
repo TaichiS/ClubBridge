@@ -126,6 +126,11 @@ const router = createRouter({
               path: 'announcement',
               name: 'school-admin-announcement',
               component: () => import('@/pages/school-admin/AnnouncementPage.vue')
+            },
+            {
+              path: 'allocation',
+              name: 'school-admin-allocation',
+              component: () => import('@/pages/school-admin/AllocationPage.vue')
             }
           ]
         },
