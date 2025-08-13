@@ -131,6 +131,11 @@ const router = createRouter({
               path: 'allocation',
               name: 'school-admin-allocation',
               component: () => import('@/pages/school-admin/AllocationPage.vue')
+            },
+            {
+              path: 'unassigned-students',
+              name: 'school-admin-unassigned-students',
+              component: () => import('@/pages/school-admin/UnassignedStudentsPage.vue')
             }
           ]
         },

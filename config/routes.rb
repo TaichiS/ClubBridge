@@ -90,6 +90,13 @@ Rails.application.routes.draw do
           get :count
         end
       end
+      
+      # 衰運學生處理相關路由
+      get :unassigned_students, to: 'unassigned_students#index'
+      get :available_clubs, to: 'unassigned_students#available_clubs'
+      post :manual_assignment, to: 'unassigned_students#manual_assignment'
+      post :bulk_assignment, to: 'unassigned_students#bulk_assignment'
+      get :assignment_statistics, to: 'unassigned_students#statistics'
       resource :setting, only: [:show, :create, :update], controller: 'school_settings'
       get :statistics, to: 'statistics#show'
       get 'statistics/daily', to: 'statistics#daily'
