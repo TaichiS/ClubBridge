@@ -246,6 +246,72 @@ class Api::ClubSelectionsController < ApplicationController
     render json: { error: "沒有權限執行此操作" }, status: :forbidden
   end
 
+
+  # 依照志願分發社團（管理員專用）
+  def allocate_clubs
+    # 檢查管理員權限
+    unless @current_user
+      return render json: { error: "需要管理員身份才能執行此操作" }, status: :unauthorized
+    end
+
+    # 使用 Pundit 檢查權限
+    authorize ClubSelection, :allocate_clubs?
+
+    # 取得當前學校
+    current_school = ActsAsTenant.current_tenant
+    unless current_school
+      return render json: { error: "無法識別當前學校" }, status: :bad_request
+    end
+
+    # 檢查是否有學生和社團
+    if Student.where(school: current_school).empty?
+      return render json: { error: "沒有學生資料" }, status: :bad_request
+    end
+
+    if Club.where(school: current_school).empty?
+      return render json: { error: "沒有社團資料" }, status: :bad_request
+    end
+
+    # 檢查是否有選社記錄
+    if ClubSelection.where(school: current_school).empty?
+      return render json: { error: "沒有選社記錄" }, status: :bad_request
+    end
+
+    begin
+      # 執行分發服務
+      service = ClubAllocationService.new(current_school)
+      result = service.allocate_clubs
+
+      if result[:success]
+        render json: {
+          success: true,
+          message: result[:message],
+          statistics: result[:statistics],
+          warnings: result[:warnings],
+          total_log_entries: result[:log].length,
+          detailed_log: params[:include_log] == "true" ? result[:log] : nil
+        }, status: :ok
+      else
+        render json: {
+          success: false,
+          error: result[:message],
+          log: result[:log]
+        }, status: :unprocessable_entity
+      end
+
+    rescue StandardError => e
+      Rails.logger.error "Club allocation error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+
+      render json: {
+        success: false,
+        error: "分發過程發生系統錯誤",
+        details: Rails.env.development? ? e.message : nil
+      }, status: :internal_server_error
+    end
+  end
+
+
   # 撤銷學生特殊身份（管理員專用）
   def revoke_special_status
     student_id = params[:student_id]

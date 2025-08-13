@@ -4,6 +4,10 @@ class Student < ApplicationRecord
 
   has_many :club_selections, dependent: :destroy
   has_many :clubs, through: :club_selections
+  
+  # 新增分發相關關聯
+  has_many :club_allocations, dependent: :destroy
+  has_one :club_membership, dependent: :destroy
 
   validates :name, presence: true
   validates :student_id, presence: true, uniqueness: { scope: :school_id }

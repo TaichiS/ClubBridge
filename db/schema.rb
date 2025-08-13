@@ -10,7 +10,39 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_17_110153) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_13_135944) do
+  create_table "club_allocations", force: :cascade do |t|
+    t.integer "student_id", null: false
+    t.integer "club_id", null: false
+    t.integer "school_id", null: false
+    t.integer "preference", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["club_id"], name: "index_club_allocations_on_club_id"
+    t.index ["school_id", "club_id", "preference"], name: "index_club_allocations_on_club_preference"
+    t.index ["school_id", "student_id", "club_id"], name: "index_club_allocations_on_student_club", unique: true
+    t.index ["school_id", "student_id", "preference"], name: "index_club_allocations_on_student_preference", unique: true
+    t.index ["school_id"], name: "index_club_allocations_on_school_id"
+    t.index ["student_id"], name: "index_club_allocations_on_student_id"
+  end
+
+  create_table "club_memberships", force: :cascade do |t|
+    t.integer "student_id", null: false
+    t.integer "club_id", null: false
+    t.integer "school_id", null: false
+    t.datetime "assigned_at", null: false
+    t.integer "allocation_round"
+    t.string "assignment_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["club_id"], name: "index_club_memberships_on_club_id"
+    t.index ["school_id", "assignment_type"], name: "index_club_memberships_on_assignment_type"
+    t.index ["school_id", "club_id"], name: "index_club_memberships_on_club"
+    t.index ["school_id", "student_id"], name: "index_club_memberships_on_student", unique: true
+    t.index ["school_id"], name: "index_club_memberships_on_school_id"
+    t.index ["student_id"], name: "index_club_memberships_on_student_id"
+  end
+
   create_table "club_selections", force: :cascade do |t|
     t.integer "student_id", null: false
     t.integer "club_id", null: false
@@ -127,6 +159,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_17_110153) do
     t.index ["user_role"], name: "index_users_on_user_role"
   end
 
+  add_foreign_key "club_allocations", "clubs"
+  add_foreign_key "club_allocations", "schools"
+  add_foreign_key "club_allocations", "students"
+  add_foreign_key "club_memberships", "clubs"
+  add_foreign_key "club_memberships", "schools"
+  add_foreign_key "club_memberships", "students"
   add_foreign_key "club_selections", "clubs"
   add_foreign_key "club_selections", "schools"
   add_foreign_key "club_selections", "students"
