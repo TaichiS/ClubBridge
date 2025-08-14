@@ -71,7 +71,7 @@
           />
           <p class="text-sm text-gray-500 mt-1">
             建議設定為可用社團總數的 30%-50%，確保有足夠的選擇多樣性<br>
-            <strong>注意：</strong>處理大量學生資料可能需要 30-60 秒時間
+            <strong>注意：</strong>處理大量學生資料可能需要超過 60 秒的時間
           </p>
         </div>
       </div>
@@ -99,8 +99,47 @@
           :disabled="!confirmRisk || !clubCount || clubCount <= 0 || isExecuting"
           class="px-6 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isExecuting ? '處理中...（可能需要30-60秒）' : '執行隨機選社' }}
+          <div v-if="isExecuting" class="flex items-center">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            執行中...（可能需要 1-3 分鐘）
+          </div>
+          <span v-else>執行隨機選社</span>
         </button>
+      </div>
+    </div>
+
+    <!-- 執行日誌 -->
+    <div v-if="executionLog.length > 0" class="mt-6 bg-white rounded-lg shadow-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">執行日誌</h2>
+        <button
+          @click="showDetailedLog = !showDetailedLog"
+          class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+        >
+          {{ showDetailedLog ? '隱藏詳細日誌' : '顯示詳細日誌' }}
+        </button>
+      </div>
+
+      <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+        <div v-for="(entry, index) in (showDetailedLog ? executionLog : executionLog.slice(-5))" :key="index" class="mb-2 last:mb-0">
+          <div class="flex items-start space-x-2">
+            <span class="text-xs text-gray-500 mt-1 w-16 flex-shrink-0">
+              {{ formatTime(entry.timestamp) }}
+            </span>
+            <span
+              :class="{
+                'text-blue-600': entry.level === 'INFO',
+                'text-yellow-600': entry.level === 'WARNING',
+                'text-red-600': entry.level === 'ERROR',
+                'text-green-600': entry.level === 'SUCCESS'
+              }"
+              class="text-xs font-mono flex-shrink-0 w-16"
+            >
+              [{{ entry.level }}]
+            </span>
+            <span class="text-sm text-gray-700 flex-1">{{ entry.message }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -148,9 +187,12 @@
           </svg>
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">執行失敗或尚在進行中</h3>
+          <h3 class="text-sm font-medium text-red-800">執行狀況</h3>
           <div class="mt-2 text-sm text-red-700">
             <p>{{ error }}</p>
+            <p v-if="isExecuting" class="mt-2 text-amber-600">
+              💡 執行時間較長是正常現象，請查看上方執行日誌了解進度
+            </p>
           </div>
         </div>
       </div>
@@ -171,6 +213,33 @@ const confirmRisk = ref<boolean>(false)
 const isExecuting = ref<boolean>(false)
 const result = ref<any>(null)
 const error = ref<string>('')
+const showDetailedLog = ref<boolean>(false)
+
+// 執行日誌
+const executionLog = ref<Array<{
+  timestamp: string,
+  level: 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS',
+  message: string
+}>>([])
+
+// 格式化時間
+const formatTime = (timestamp: string) => {
+  return new Date(timestamp).toLocaleTimeString('zh-TW', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+}
+
+// 添加日誌記錄
+const addLog = (level: 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS', message: string) => {
+  executionLog.value.push({
+    timestamp: new Date().toISOString(),
+    level,
+    message
+  })
+}
 
 // 執行隨機分配
 const executeRandomAssignment = async () => {
@@ -182,24 +251,69 @@ const executeRandomAssignment = async () => {
   isExecuting.value = true
   error.value = ''
   result.value = null
+  executionLog.value = []
+  
+  let progressTimer: NodeJS.Timeout | null = null
+
+  // 添加開始日誌
+  addLog('INFO', '開始執行隨機選社功能...')
+  addLog('INFO', `設定參數：每位學生選擇 ${clubCount.value} 個社團`)
+  
+  // 模擬進度更新（因為後端 API 不支援實時日誌回傳）
+  progressTimer = setInterval(() => {
+    const progressMessages = [
+      '正在清除舊的選社記錄...',
+      '正在為學生隨機選取社團...',
+      '正在建立新的選社記錄...',
+      '正在驗證資料完整性...',
+      '即將完成處理...'
+    ]
+    const randomMessage = progressMessages[Math.floor(Math.random() * progressMessages.length)]
+    addLog('INFO', `⏳ ${randomMessage}`)
+  }, 15000) // 每15秒顯示一次進度訊息
 
   try {
+    // 設置與 AllocationPage.vue 相同的超時時間（3分鐘）
     const response = await apiClient.getRawClient().post(`/api/schools/${route.params.schoolId}/club_selections/assign_random_clubs`, {
       club_count: clubCount.value
     }, {
-      timeout: 60000 // 60 秒超時
+      timeout: 180000 // 3 分鐘，與 allocationApi.allocateClubs 相同
     })
 
+    // 清除進度計時器
+    if (progressTimer) clearInterval(progressTimer)
+
     result.value = response.data
+
+    // 添加成功日誌
+    addLog('SUCCESS', '✅ 隨機選社執行完成！')
+    if (result.value.summary) {
+      addLog('INFO', `📊 成功處理 ${result.value.summary.total_students} 位學生`)
+      addLog('INFO', `📝 總共建立 ${result.value.summary.total_selections_created} 筆選社記錄`)
+      addLog('INFO', `🎯 使用 ${result.value.summary.available_clubs} 個可用社團`)
+    }
 
     // 重置表單
     confirmRisk.value = false
 
   } catch (err: any) {
+    // 清除進度計時器
+    if (progressTimer) clearInterval(progressTimer)
+    console.error('隨機選社執行錯誤:', err)
+
     if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-      error.value = '執行時間較長，請稍後到「選社結果」頁面查看是否已完成，或重新整理此頁面查看執行狀態'
+      addLog('WARNING', '⚠️ 執行時間超過預期（3分鐘），但處理可能仍在背景進行')
+      addLog('INFO', '💡 建議稍後到「選社結果」頁面查看是否已完成')
+      addLog('INFO', '❌ 請勿短時間內重複執行，避免資料衝突')
+      error.value = '執行時間較長（超過3分鐘），處理可能仍在背景進行。請勿重複執行，稍後查看選社結果頁面確認狀態。'
+    } else if (err.response?.status === 500) {
+      addLog('ERROR', '❌ 伺服器內部錯誤，處理可能需要更多時間')
+      addLog('INFO', '💡 建議稍後重新檢查或聯繫系統管理員')
+      error.value = '伺服器處理中發生問題，請稍後重新檢查結果。'
     } else {
-      error.value = err.response?.data?.error || err.message || '執行失敗，請稍後再試'
+      const errorMessage = err.response?.data?.error || err.message || '執行失敗'
+      addLog('ERROR', `❌ 執行失敗: ${errorMessage}`)
+      error.value = errorMessage
     }
   } finally {
     isExecuting.value = false

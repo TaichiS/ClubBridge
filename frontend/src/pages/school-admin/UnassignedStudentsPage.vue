@@ -70,26 +70,26 @@
     <!-- 批量分配區 -->
     <div v-if="unassignedStudents.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
       <h2 class="text-xl font-semibold text-gray-900 mb-4">批量分配</h2>
-      
+
       <div class="flex flex-col sm:flex-row gap-4 items-end">
         <div class="flex-1">
           <label class="block text-sm font-medium text-gray-700 mb-2">選擇社團</label>
           <select
             v-model="bulkAssignmentClubId"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="text-gray-600 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">請選擇社團</option>
-            <option 
-              v-for="club in availableClubs" 
-              :key="club.id" 
+            <option
+              v-for="club in availableClubs"
+              :key="club.id"
               :value="club.id"
               :disabled="club.available_spots <= 0"
             >
-              {{ club.name }} (剩餘 {{ club.available_spots }} 個名額)
+              {{ club.name }} (剩餘 {{ club.available_spots }} 個名額, {{ getEligibleStudentsCount(club) }} 位符合條件)
             </option>
           </select>
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">分配人數</label>
           <input
@@ -97,11 +97,11 @@
             type="number"
             :min="1"
             :max="maxBulkAssignmentCount"
-            class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="text-gray-600 w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="人數"
           />
         </div>
-        
+
         <button
           @click="performBulkAssignment"
           :disabled="!canPerformBulkAssignment"
@@ -110,9 +110,9 @@
           批量分配
         </button>
       </div>
-      
+
       <p v-if="bulkAssignmentClubId" class="text-sm text-gray-500 mt-2">
-        將隨機選取 {{ Math.min(bulkAssignmentCount || 1, maxBulkAssignmentCount) }} 位學生分配到該社團
+        將從 {{ maxBulkAssignmentCount }} 位符合條件的學生中隨機選取 {{ Math.min(bulkAssignmentCount || 1, maxBulkAssignmentCount) }} 位分配到該社團
       </p>
     </div>
 
@@ -128,11 +128,11 @@
               class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
               title="重新整理"
             >
-              <svg 
-                class="h-5 w-5" 
-                :class="{ 'animate-spin': isLoading }" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                class="h-5 w-5"
+                :class="{ 'animate-spin': isLoading }"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -180,13 +180,13 @@
               <div class="flex items-center space-x-3">
                 <select
                   v-model="student.selectedClubId"
-                  class="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="text-gray-600 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   @change="updateSelectedClub(student)"
                 >
                   <option value="">選擇社團</option>
-                  <option 
-                    v-for="club in getAvailableClubsForStudent(student)" 
-                    :key="club.id" 
+                  <option
+                    v-for="club in getAvailableClubsForStudent(student)"
+                    :key="club.id"
                     :value="club.id"
                   >
                     {{ club.name }} ({{ club.available_spots }})
@@ -274,12 +274,26 @@ const totalAvailableSpots = computed(() => {
 const maxBulkAssignmentCount = computed(() => {
   const selectedClub = availableClubs.value.find(club => club.id === bulkAssignmentClubId.value)
   if (!selectedClub) return 0
-  return Math.min(selectedClub.available_spots, unassignedStudents.value.length)
+
+  // 計算符合條件的學生數量
+  const eligibleStudentsCount = unassignedStudents.value.filter(student => {
+    // 檢查社團條件限制
+    if (selectedClub.condition1 && selectedClub.condition1 !== 0 &&
+        student.condition1 !== selectedClub.condition1) return false
+    if (selectedClub.condition2 && selectedClub.condition2 !== 0 &&
+        student.condition2 !== selectedClub.condition2) return false
+    if (selectedClub.condition3 && selectedClub.condition3 !== 0 &&
+        student.condition3 !== selectedClub.condition3) return false
+
+    return true
+  }).length
+
+  return Math.min(selectedClub.available_spots, eligibleStudentsCount)
 })
 
 const canPerformBulkAssignment = computed(() => {
-  return bulkAssignmentClubId.value && 
-         bulkAssignmentCount.value > 0 && 
+  return bulkAssignmentClubId.value &&
+         bulkAssignmentCount.value > 0 &&
          bulkAssignmentCount.value <= maxBulkAssignmentCount.value &&
          !isAssigning.value
 })
@@ -313,9 +327,23 @@ const getAvailableClubsForStudent = (student: any) => {
     if (club.condition1 && club.condition1 !== student.condition1) return false
     if (club.condition2 && club.condition2 !== student.condition2) return false
     if (club.condition3 && club.condition3 !== student.condition3) return false
-    
+
     return club.available_spots > 0
   })
+}
+
+const getEligibleStudentsCount = (club: any) => {
+  return unassignedStudents.value.filter(student => {
+    // 檢查社團條件限制
+    if (club.condition1 && club.condition1 !== 0 &&
+        student.condition1 !== club.condition1) return false
+    if (club.condition2 && club.condition2 !== 0 &&
+        student.condition2 !== club.condition2) return false
+    if (club.condition3 && club.condition3 !== 0 &&
+        student.condition3 !== club.condition3) return false
+
+    return true
+  }).length
 }
 
 const updateSelectedClub = (student: any) => {
@@ -329,14 +357,14 @@ const assignStudentToClub = async (student: any) => {
   try {
     const schoolId = Number(route.params.schoolId)
     await unassignedStudentsApi.assignStudentToClub(
-      schoolId, 
-      student.id, 
+      schoolId,
+      student.id,
       student.selectedClubId
     )
 
     // 更新本地狀態
     unassignedStudents.value = unassignedStudents.value.filter(s => s.id !== student.id)
-    
+
     // 更新社團可用名額
     const club = availableClubs.value.find(c => c.id === student.selectedClubId)
     if (club) {
@@ -345,7 +373,7 @@ const assignStudentToClub = async (student: any) => {
         availableClubs.value = availableClubs.value.filter(c => c.id !== club.id)
       }
     }
-    
+
     assignedCount.value++
 
   } catch (error: any) {
@@ -362,9 +390,37 @@ const performBulkAssignment = async () => {
   isAssigning.value = true
   try {
     const schoolId = Number(route.params.schoolId)
-    
-    // 隨機選取學生
-    const studentsToAssign = [...unassignedStudents.value]
+
+    // 找到選定的社團
+    const selectedClub = availableClubs.value.find(c => c.id === bulkAssignmentClubId.value)
+    if (!selectedClub) {
+      throw new Error('找不到選定的社團')
+    }
+
+    // 過濾符合條件的學生
+    const eligibleStudents = unassignedStudents.value.filter(student => {
+      // 檢查社團條件限制
+      if (selectedClub.condition1 && selectedClub.condition1 !== 0 &&
+          student.condition1 !== selectedClub.condition1) return false
+      if (selectedClub.condition2 && selectedClub.condition2 !== 0 &&
+          student.condition2 !== selectedClub.condition2) return false
+      if (selectedClub.condition3 && selectedClub.condition3 !== 0 &&
+          student.condition3 !== selectedClub.condition3) return false
+
+      return true
+    })
+
+    // 檢查是否有足夠符合條件的學生
+    if (eligibleStudents.length === 0) {
+      throw new Error('沒有符合該社團條件的學生')
+    }
+
+    if (eligibleStudents.length < bulkAssignmentCount.value) {
+      throw new Error(`只有 ${eligibleStudents.length} 位學生符合條件，但要分配 ${bulkAssignmentCount.value} 位`)
+    }
+
+    // 從符合條件的學生中隨機選取
+    const studentsToAssign = [...eligibleStudents]
       .sort(() => 0.5 - Math.random())
       .slice(0, bulkAssignmentCount.value)
 
@@ -372,8 +428,8 @@ const performBulkAssignment = async () => {
     await Promise.all(
       studentsToAssign.map(student =>
         unassignedStudentsApi.assignStudentToClub(
-          schoolId, 
-          student.id, 
+          schoolId,
+          student.id,
           bulkAssignmentClubId.value
         )
       )
@@ -382,7 +438,7 @@ const performBulkAssignment = async () => {
     // 更新本地狀態
     const assignedStudentIds = new Set(studentsToAssign.map(s => s.id))
     unassignedStudents.value = unassignedStudents.value.filter(s => !assignedStudentIds.has(s.id))
-    
+
     // 更新社團可用名額
     const club = availableClubs.value.find(c => c.id === bulkAssignmentClubId.value)
     if (club) {
@@ -391,9 +447,9 @@ const performBulkAssignment = async () => {
         availableClubs.value = availableClubs.value.filter(c => c.id !== club.id)
       }
     }
-    
+
     assignedCount.value += studentsToAssign.length
-    
+
     // 重置批量分配表單
     bulkAssignmentClubId.value = ''
     bulkAssignmentCount.value = 1
