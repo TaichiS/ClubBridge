@@ -234,75 +234,180 @@
     </div>
 
     <!-- 新增社團對話框 -->
-    <div v-if="showAddClubModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">新增社團</h3>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">社團編號</label>
-              <input
-                v-model="newClub.club_number"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
+    <div v-if="showAddClubModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div class="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 transform transition-all">
+        <!-- 標題區域 -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-xl px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white">新增社團</h3>
+                <p class="text-blue-100 text-sm">請填寫社團基本資料</p>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">社團名稱</label>
-              <input
-                v-model="newClub.name"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
+            <button
+              @click="showAddClubModal = false"
+              class="text-white hover:text-gray-200 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 表單內容 -->
+        <div class="p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 左欄：基本資料 -->
+            <div class="space-y-5">
+              <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">基本資料</h4>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">社團編號</label>
+                <input
+                  v-model="newClub.club_number"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">社團名稱</label>
+                <input
+                  v-model="newClub.name"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">類別</label>
+                <input
+                  v-model="newClub.category"
+                  type="text"
+                  placeholder="如：體育、藝文、學術"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">指導老師</label>
+                <input
+                  v-model="newClub.teacher_name"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">最大人數</label>
+                <input
+                  v-model="newClub.max_members"
+                  type="number"
+                  min="1"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">簡介</label>
+                <textarea
+                  v-model="newClub.description"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                ></textarea>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">類別</label>
-              <input
-                v-model="newClub.category"
-                type="text"
-                placeholder="如：體育、藝文、學術"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">指導老師</label>
-              <input
-                v-model="newClub.teacher_name"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">最大人數</label>
-              <input
-                v-model="newClub.max_members"
-                type="number"
-                min="1"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">上課地點</label>
-              <input
-                v-model="newClub.location"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">簡介</label>
-              <textarea
-                v-model="newClub.description"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              ></textarea>
+            
+            <!-- 右欄：進階資料 -->
+            <div class="space-y-5">
+              <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">進階資料</h4>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">上課地點</label>
+                <input
+                  v-model="newClub.location"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">雨天地點</label>
+                <input
+                  v-model="newClub.rainy_day_location"
+                  type="text"
+                  placeholder="可選填雨天上課地點"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">條件一（性別限制）</label>
+                <select
+                  v-model="newClub.condition1"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                >
+                  <option value="0">無限制</option>
+                  <option value="1">限男生</option>
+                  <option value="2">限女生</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">條件二（學制限制）</label>
+                <select
+                  v-model="newClub.condition2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                >
+                  <option value="0">無限制</option>
+                  <option value="1">限高中</option>
+                  <option value="2">限國中</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">條件三（自訂條件）</label>
+                <input
+                  v-model="newClub.condition3"
+                  type="text"
+                  placeholder="可選填特殊條件"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">社團老師Email</label>
+                <input
+                  v-model="newClub.teacher_email"
+                  type="email"
+                  placeholder="可選填，用於老師登入識別"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">備註</label>
+                <textarea
+                  v-model="newClub.note"
+                  rows="3"
+                  placeholder="可選填備註事項"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                ></textarea>
+              </div>
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
@@ -467,6 +572,46 @@
               </div>
             </div>
             
+            <!-- 選社條件 -->
+            <div class="mt-6">
+              <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">選社條件</h4>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1">條件一</p>
+                    <p class="text-lg font-bold text-gray-900">
+                      {{ selectedClub.condition1 === 1 ? '限男生' : selectedClub.condition1 === 2 ? '限女生' : '無限制' }}
+                    </p>
+                  </div>
+                  <div class="text-center">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1">條件二</p>
+                    <p class="text-lg font-bold text-gray-900">
+                      {{ selectedClub.condition2 === 1 ? '限高中' : selectedClub.condition2 === 2 ? '限國中' : '無限制' }}
+                    </p>
+                  </div>
+                  <div class="text-center">
+                    <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1">條件三</p>
+                    <p class="text-lg font-bold text-gray-900">{{ selectedClub.condition3 || '無' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- 描述 -->
             <div class="mt-6">
               <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">社團簡介</h4>
@@ -506,76 +651,182 @@
     </div>
 
     <!-- 編輯社團對話框 -->
-    <div v-if="showEditClubModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">編輯社團</h3>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">社團編號</label>
-              <input
-                v-model="editClub.club_number"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
+    <div v-if="showEditClubModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+      <div class="relative bg-white rounded-xl shadow-2xl max-w-5xl w-full mx-4 transform transition-all">
+        <!-- 標題區域 -->
+        <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-t-xl px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white">編輯社團</h3>
+                <p class="text-green-100 text-sm">修改社團資料</p>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">社團名稱</label>
-              <input
-                v-model="editClub.name"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
+            <button
+              @click="showEditClubModal = false"
+              class="text-white hover:text-gray-200 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 表單內容 -->
+        <div class="p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 左欄：基本資料 -->
+            <div class="space-y-5">
+              <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">基本資料</h4>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">社團編號</label>
+                <input
+                  v-model="editClub.club_number"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">社團名稱</label>
+                <input
+                  v-model="editClub.name"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">類別</label>
+                <input
+                  v-model="editClub.category"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">指導老師</label>
+                <input
+                  v-model="editClub.teacher_name"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">最大人數</label>
+                <input
+                  v-model="editClub.max_members"
+                  type="number"
+                  min="1"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">簡介</label>
+                <textarea
+                  v-model="editClub.description"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                ></textarea>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">類別</label>
-              <input
-                v-model="editClub.category"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">指導老師</label>
-              <input
-                v-model="editClub.teacher_name"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">最大人數</label>
-              <input
-                v-model="editClub.max_members"
-                type="number"
-                min="1"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">上課地點</label>
-              <input
-                v-model="editClub.location"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">簡介</label>
-              <textarea
-                v-model="editClub.description"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                required
-              ></textarea>
+            
+            <!-- 右欄：進階資料 -->
+            <div class="space-y-5">
+              <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">進階資料</h4>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">上課地點</label>
+                <input
+                  v-model="editClub.location"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">雨天地點</label>
+                <input
+                  v-model="editClub.rainy_day_location"
+                  type="text"
+                  placeholder="可選填雨天上課地點"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">條件一（性別限制）</label>
+                <select
+                  v-model="editClub.condition1"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                >
+                  <option value="0">無限制</option>
+                  <option value="1">限男生</option>
+                  <option value="2">限女生</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">條件二（學制限制）</label>
+                <select
+                  v-model="editClub.condition2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                >
+                  <option value="0">無限制</option>
+                  <option value="1">限高中</option>
+                  <option value="2">限國中</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">條件三（自訂條件）</label>
+                <input
+                  v-model="editClub.condition3"
+                  type="text"
+                  placeholder="可選填特殊條件"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">社團老師Email</label>
+                <input
+                  v-model="editClub.teacher_email"
+                  type="email"
+                  placeholder="可選填，用於老師登入識別"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">備註</label>
+                <textarea
+                  v-model="editClub.note"
+                  rows="3"
+                  placeholder="可選填備註事項"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                ></textarea>
+              </div>
             </div>
           </div>
+          
           <div class="flex justify-end space-x-3 mt-6">
             <button
               @click="showEditClubModal = false"
@@ -586,7 +837,7 @@
             <button
               @click="updateClub"
               :disabled="isLoading"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
             >
               {{ isLoading ? '更新中...' : '更新' }}
             </button>
