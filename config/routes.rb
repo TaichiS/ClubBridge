@@ -66,6 +66,8 @@ Rails.application.routes.draw do
       resources :students, only: [:index, :create, :update, :destroy] do
         collection do
           post :import
+          get :grades
+          get :classes
         end
       end
       resources :clubs, only: [:index, :create, :update, :destroy] do
@@ -104,6 +106,12 @@ Rails.application.routes.draw do
       
       namespace :admin do
         resource :school, only: [:show, :update], controller: 'schools'
+        
+        # 選社結果查詢路由
+        get 'results/class', to: 'results#class_results'
+        get 'results/club/:club_id', to: 'results#club_results'
+        get 'results/class/export', to: 'results#export_class_results'
+        get 'results/club/:club_id/export', to: 'results#export_club_results'
       end
     end
   end

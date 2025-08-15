@@ -46,9 +46,10 @@ gem "csv"
 # For HTTP requests (Google OAuth verification)
 gem "net-http"
 
+# For generating Excel files
+gem "caxlsx"
+
 group :development, :test do
-  # For generating Excel files for tests
-  gem "caxlsx"
 
   # For API documentation
   gem 'rswag-api'

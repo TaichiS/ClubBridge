@@ -136,6 +136,11 @@ const router = createRouter({
               path: 'unassigned-students',
               name: 'school-admin-unassigned-students',
               component: () => import('@/pages/school-admin/UnassignedStudentsPage.vue')
+            },
+            {
+              path: 'results',
+              name: 'school-admin-results',
+              component: () => import('@/views/school/admin/Results.vue')
             }
           ]
         },

@@ -41,6 +41,27 @@ class Api::StudentsController < ApplicationController
     head :no_content
   end
 
+  # 取得學校所有年級
+  def grades
+    grades = Student.distinct.pluck(:grade).compact.sort
+    render json: grades
+  end
+
+  # 取得指定年級的所有班級
+  def classes
+    grade = params[:grade].to_i
+    
+    return render json: { error: '請提供年級參數' }, status: :bad_request if grade.zero?
+    
+    classes = Student.where(grade: grade)
+                    .select(:class_number, :class_name)
+                    .distinct
+                    .order(:class_number)
+                    .map { |s| { class_number: s.class_number, class_name: s.class_name } }
+    
+    render json: classes
+  end
+
   def import
     file = params[:file]
     
