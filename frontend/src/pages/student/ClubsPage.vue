@@ -103,7 +103,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-600">熱門社團</p>
-            <p class="text-2xl font-bold text-gray-900">{{ fullClubs.length }}</p>
+            <p class="text-2xl font-bold text-gray-900">{{ popularClubs.length }}</p>
           </div>
         </div>
       </div>
@@ -148,7 +148,10 @@
                 {{ club.club_number }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ club.name }}
+                <div class="flex items-center">
+                  <span v-if="club.is_popular" class="text-red-500 mr-2" title="熱門社團">🔥</span>
+                  {{ club.name }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ club.category }}
@@ -157,17 +160,27 @@
                 {{ club.teacher_name }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ (club.current_members || 0) }}/{{ club.max_members }}
+                <div class="flex items-center space-x-2">
+                  <span :class="club.is_popular ? 'text-red-600 font-semibold' : 'text-gray-900'">
+                    {{ club.first_choice_count || 0 }}/{{ club.max_members }}
+                  </span>
+                  <span v-if="club.is_popular" class="text-xs text-red-500" title="第一志願人數超過社團上限">
+                    (超額 {{ club.oversubscribed_by || 0 }})
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ club.location }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span v-if="(club.current_members || 0) >= club.max_members" class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                  已滿
+                <span v-if="club.is_popular" class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                  熱門
+                </span>
+                <span v-else-if="(club.first_choice_count || 0) === 0" class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                  待選
                 </span>
                 <span v-else class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                  可選
+                  正常
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -400,15 +413,19 @@
                       </svg>
                     </div>
                     <div class="flex-1">
-                      <p class="text-sm text-gray-600">人數狀態</p>
+                      <p class="text-sm text-gray-600">人數狀態（第一志願/上限）</p>
                       <div class="mt-1">
-                        <span class="text-lg font-bold text-gray-900">
-                          {{ selectedClub.current_members || 0 }} / {{ selectedClub.max_members }}
+                        <span class="text-lg font-bold" :class="selectedClub.is_popular ? 'text-red-600' : 'text-gray-900'">
+                          {{ selectedClub.first_choice_count || 0 }} / {{ selectedClub.max_members }}
+                        </span>
+                        <span v-if="selectedClub.is_popular" class="ml-2 text-sm text-red-500">
+                          (超額 {{ selectedClub.oversubscribed_by || 0 }})
                         </span>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
                           <div 
-                            class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                            :style="{ width: `${Math.min((selectedClub.current_members || 0) / selectedClub.max_members * 100, 100)}%` }"
+                            :class="selectedClub.is_popular ? 'bg-red-500' : 'bg-blue-600'"
+                            class="h-2 rounded-full transition-all duration-300"
+                            :style="{ width: `${Math.min((selectedClub.first_choice_count || 0) / selectedClub.max_members * 100, 100)}%` }"
                           ></div>
                         </div>
                       </div>
@@ -423,19 +440,29 @@
                     </div>
                     <div class="flex-1">
                       <p class="text-sm text-gray-600">選社狀態</p>
-                      <div class="mt-1">
-                        <span v-if="(selectedClub.current_members || 0) >= selectedClub.max_members" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          已滿額
-                        </span>
-                        <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                          </svg>
-                          可選
-                        </span>
+                      <div class="mt-1 space-y-2">
+                        <!-- 熱門狀態 -->
+                        <div v-if="selectedClub.is_popular">
+                          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                            <span class="mr-1">🔥</span>
+                            熱門社團
+                          </span>
+                        </div>
+                        
+                        <!-- 可選狀態 -->
+                        <div>
+                          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            可選
+                          </span>
+                        </div>
+                        
+                        <!-- 提示訊息 -->
+                        <div v-if="selectedClub.is_popular" class="text-xs text-gray-500 mt-1">
+                          此社團競爭激烈，建議同時考慮其他選擇
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -573,6 +600,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useClubStore } from '@/stores/club'
 import { useAuthStore } from '@/stores/auth'
 import type { Club } from '@/types/club'
+import axios from 'axios'
 
 const router = useRouter()
 const route = useRoute()
@@ -630,7 +658,6 @@ const editClub = ref({
 })
 
 // 計算屬性
-const isLoading = computed(() => clubStore.isLoading)
 
 const filteredClubs = computed(() => {
   if (!clubs.value || !Array.isArray(clubs.value)) return []
@@ -654,15 +681,20 @@ const filteredClubs = computed(() => {
 
   // 條件一篩選
   if (selectedCondition1.value) {
-    filtered = filtered.filter(club => club.condition1 === parseInt(selectedCondition1.value))
+    filtered = filtered.filter(club => (club.condition1 || 0) === parseInt(selectedCondition1.value))
   }
 
   // 條件二篩選
   if (selectedCondition2.value) {
-    filtered = filtered.filter(club => club.condition2 === parseInt(selectedCondition2.value))
+    filtered = filtered.filter(club => (club.condition2 || 0) === parseInt(selectedCondition2.value))
   }
 
-  return filtered
+  // 按社團編號排序（由小到大）
+  return filtered.sort((a, b) => {
+    const aNumber = parseInt(a.club_number) || 0
+    const bNumber = parseInt(b.club_number) || 0
+    return aNumber - bNumber
+  })
 })
 
 const paginatedClubs = computed(() => {
@@ -683,12 +715,12 @@ const availableCategories = computed(() => {
 
 const availableClubs = computed(() => {
   if (!clubs.value || !Array.isArray(clubs.value)) return []
-  return clubs.value.filter(club => (club.current_members || 0) < club.max_members)
+  return clubs.value.filter(club => !club.is_popular && (club.first_choice_count || 0) < club.max_members)
 })
 
-const fullClubs = computed(() => {
+const popularClubs = computed(() => {
   if (!clubs.value || !Array.isArray(clubs.value)) return []
-  return clubs.value.filter(club => (club.current_members || 0) >= club.max_members)
+  return clubs.value.filter(club => club.is_popular)
 })
 
 const totalCapacity = computed(() => {
@@ -696,19 +728,38 @@ const totalCapacity = computed(() => {
   return clubs.value.reduce((total, club) => total + club.max_members, 0)
 })
 
+// 載入狀態
+const isLoading = ref(false)
+
 // 方法
 const refreshData = async () => {
   if (!schoolId.value) return
 
   try {
-    await clubStore.fetchClubs(schoolId.value)
-    clubs.value = clubStore.clubs
+    isLoading.value = true
+    
+    // 使用熱門社團 API 來獲取更準確的資料
+    const response = await axios.get(`/api/public/schools/${schoolId.value}/clubs/popular`)
+    const data = response.data
+    
+    // 將 all_clubs 資料設置為 clubs
+    clubs.value = data.all_clubs || []
+    
     console.log('載入的社團資料:', clubs.value)
     if (clubs.value.length > 0) {
       console.log('第一個社團的資料結構:', clubs.value[0])
     }
   } catch (error) {
     console.error('載入社團資料失敗:', error)
+    // 如果熱門社團 API 失敗，降級到原來的 API
+    try {
+      await clubStore.fetchClubs(schoolId.value)
+      clubs.value = clubStore.clubs
+    } catch (fallbackError) {
+      console.error('備用 API 也失敗:', fallbackError)
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 

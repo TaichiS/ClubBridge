@@ -32,6 +32,67 @@ class Api::Public::ClubsController < ApplicationController
     render json: { error: 'School not found' }, status: :not_found
   end
   
+  def popular
+    school = School.find(params[:school_id])
+    
+    # 使用 SQL 查詢來計算每個社團的第一志願人數
+    clubs_with_stats = school.clubs
+      .joins('LEFT JOIN club_selections ON clubs.id = club_selections.club_id AND club_selections.preference = 1')
+      .select('clubs.*, COUNT(club_selections.id) as first_choice_count')
+      .group('clubs.id')
+      .having('COUNT(club_selections.id) > clubs.max_members')
+      .order('first_choice_count DESC')
+    
+    # 同時取得所有社團的選社統計
+    all_clubs_stats = school.clubs
+      .joins('LEFT JOIN club_selections ON clubs.id = club_selections.club_id AND club_selections.preference = 1')
+      .select('clubs.*, COUNT(club_selections.id) as first_choice_count')
+      .group('clubs.id')
+      .order('first_choice_count DESC')
+    
+    popular_clubs = clubs_with_stats.map do |club|
+      {
+        id: club.id,
+        club_number: club.club_number,
+        name: club.name,
+        category: club.category,
+        teacher_name: club.teacher_name,
+        description: club.description,
+        location: club.location,
+        max_members: club.max_members,
+        first_choice_count: club.first_choice_count,
+        oversubscribed_by: club.first_choice_count - club.max_members,
+        is_popular: true
+      }
+    end
+    
+    all_clubs_data = all_clubs_stats.map do |club|
+      is_popular = club.first_choice_count > club.max_members
+      
+      {
+        id: club.id,
+        club_number: club.club_number,
+        name: club.name,
+        category: club.category,
+        teacher_name: club.teacher_name,
+        description: club.description,
+        location: club.location,
+        max_members: club.max_members,
+        first_choice_count: club.first_choice_count,
+        oversubscribed_by: is_popular ? club.first_choice_count - club.max_members : 0,
+        is_popular: is_popular
+      }
+    end
+    
+    render json: {
+      popular_clubs: popular_clubs,
+      all_clubs: all_clubs_data,
+      total_popular_clubs: popular_clubs.length
+    }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'School not found' }, status: :not_found
+  end
+  
   private
   
   def get_category_icon(category)

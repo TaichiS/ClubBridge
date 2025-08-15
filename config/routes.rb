@@ -31,6 +31,7 @@ Rails.application.routes.draw do
         resources :clubs, only: [:index] do
           collection do
             get :categories
+            get :popular
           end
         end
       end

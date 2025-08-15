@@ -238,7 +238,7 @@
                   :key="club.id"
                   class="group relative bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300 cursor-pointer transform hover:-translate-y-1"
                   :class="{ 
-                    'opacity-50': club.availableSpots === 0,
+                    'opacity-50': false, // 移除基於名額的透明度邏輯，因為現在都可選
                     'opacity-60 bg-gray-50': isClubSelected(club.id),
                     'opacity-30 bg-gray-100 cursor-not-allowed': !checkEligibility(club) || isSelectionExpired
                   }"
@@ -256,9 +256,10 @@
                       </div>
                       <div :class="[
                         'px-2 py-1 rounded text-xs font-medium',
-                        club.availableSpots > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        club.isPopular ? 'bg-red-100 text-red-800' : 
+                        club.availableSpots > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                       ]">
-                        {{ club.availableSpots > 0 ? `${club.availableSpots}名額` : '已滿' }}
+                        {{ club.isPopular ? '熱門' : club.availableSpots > 0 ? `${club.availableSpots}名額` : '待選' }}
                       </div>
                     </div>
                     
@@ -273,7 +274,12 @@
                         <span v-if="club.isPopular" class="text-xs text-yellow-600">🔥 熱門</span>
                       </div>
                       <div class="text-sm text-gray-500">
-                        {{ club.currentCount }}/{{ club.maxCapacity }}
+                        <span :class="club.isPopular ? 'text-red-600 font-semibold' : ''">
+                          {{ club.firstChoiceCount || 0 }}/{{ club.maxCapacity }}
+                        </span>
+                        <span v-if="club.isPopular" class="text-xs text-red-500 ml-1" title="第一志願人數超過社團上限">
+                          (超額)
+                        </span>
                       </div>
                     </div>
                     
@@ -457,6 +463,7 @@ import { useRoute } from 'vue-router'
 import { clubApi } from '@/api/club'
 import { schoolApi } from '@/api/school'
 import { useAuthStore } from '@/stores/auth'
+import axios from 'axios'
 import type { ClubCard } from '@/student/types/club'
 import type { StudentInfo, ClubPreference, DragState } from '@/student/types/student'
 import type { Club } from '@/types/club'
@@ -534,11 +541,12 @@ const clubs = computed<ClubCard[]>(() => {
     categoryColor: getCategoryColor(club.category),
     teacher: club.teacher_name,
     currentCount: club.current_members || 0,
+    firstChoiceCount: (club as any).first_choice_count || 0,
     maxCapacity: club.max_members,
-    availableSpots: club.max_members - (club.current_members || 0),
+    availableSpots: club.max_members - ((club as any).first_choice_count || 0),
     location: club.location,
     image: `/images/club-${club.id}.jpg`,
-    isPopular: (club.current_members || 0) > club.max_members * 0.8,
+    isPopular: (club as any).is_popular || false,
     rating: 4.0 + Math.random() * 0.8,
     tags: [club.category, '社團']
   }))
@@ -840,14 +848,15 @@ const loadData = async () => {
     isLoading.value = true
     error.value = null
     
-    // 載入學校資訊和社團資料
-    const [schoolData, clubsData] = await Promise.all([
+    // 載入學校資訊和社團資料（使用熱門社團 API）
+    const [schoolData, popularClubsResponse] = await Promise.all([
       schoolApi.getPublicSchool(schoolId.value),
-      clubApi.getClubs(schoolId.value)
+      axios.get(`/api/public/schools/${schoolId.value}/clubs/popular`)
     ])
     
     schoolInfo.value = schoolData
-    realClubs.value = clubsData
+    // 使用熱門社團 API 的 all_clubs 資料
+    realClubs.value = popularClubsResponse.data.all_clubs || []
     
     // 資料載入完成後重新計算時間倒數
     updateTimeRemaining()

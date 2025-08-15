@@ -1,4 +1,7 @@
 class Api::ClubsController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:index, :search]
+  skip_before_action :set_tenant, only: [:index, :search]
+  before_action :set_public_tenant, only: [:index, :search]
   before_action :set_club, only: [ :update, :destroy ]
 
   COLUMN_MAPPING = {
@@ -131,6 +134,17 @@ class Api::ClubsController < ApplicationController
   end
 
   private
+
+  def set_public_tenant
+    if params[:school_id].present?
+      school = School.find_by(id: params[:school_id])
+      if school
+        set_current_tenant(school)
+      else
+        render json: { error: 'School not found' }, status: :not_found
+      end
+    end
+  end
 
   def set_club
     @club = Club.find(params[:id])
